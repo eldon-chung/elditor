@@ -37,3 +37,4 @@ build/*
 src/keys
 src/scanner
 src/elditor
+src/debug_log

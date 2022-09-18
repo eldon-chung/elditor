@@ -49,8 +49,9 @@
 // BACKSPACE
 #define CONTROL_BACKSPACE 8
 
-// Special key combinations
+// Special key combinations; only have to list the non alphabetical ones
 #define CONTROL_SLASH 31
+#define CONTROL_Q 17
 
 enum KeyType {
   ALPHA,
@@ -87,16 +88,22 @@ struct Key {
       : m_keycode(keycode), m_keytype(keytype), m_modifier(modifier) {
   }
 
-  bool is_modified() {
-    return m_modifier != KeyModifier::NONE;
+  bool is_modified() const {
+    return !is_modified_by(KeyModifier::NONE);
   }
 
-  bool is_insertable() {
-    return std::isalpha(m_keycode) || std::isdigit(m_keycode) ||
-           std::ispunct(m_keycode);
+  bool is_modified_by(const KeyModifier modifier) const {
+    return m_modifier == modifier;
   }
 
-  std::string to_string() {
+  bool is_insertable() const {
+    return !is_modified() &&
+           (std::isalpha(m_keycode) || std::isdigit(m_keycode) ||
+            std::ispunct(m_keycode) || m_keytype == KeyType::SPACE ||
+            m_keytype == KeyType::TAB);
+  }
+
+  std::string to_string() const {
     std::string output_string{""};
     output_string.append("keycode: ");
     output_string.append(std::to_string(m_keycode));
@@ -105,6 +112,27 @@ struct Key {
     output_string.append(" modifier: ");
     output_string.append(std::to_string(m_modifier));
     return output_string;
+  }
+
+  bool has_keycode(int keycode) const {
+    return m_keycode == keycode;
+  }
+
+  bool is_type(KeyType key_type) const {
+    return m_keytype == key_type;
+  }
+
+  KeyType type() const {
+    return m_keytype;
+  }
+
+  KeyModifier modifier() const {
+    return m_modifier;
+  }
+
+  // should only call this when it is an insertable type
+  char get_char() const {
+    return (char)m_keycode;
   }
 
   // friend std::ostream &operator<<(std::ostream &os, const Key &key);
@@ -170,7 +198,8 @@ const std::unordered_map<int, const Key> reserved_keycode_to_key{
     // enter, and their modifiers
     {ENTER_CODE, {ENTER_CODE, KeyType::ENTER, KeyModifier::NONE}},
     // MISC Key combinations
-    {CONTROL_SLASH, {CONTROL_SLASH, KeyType::PUNCTUATION, KeyModifier::CTRL}},
+    {CONTROL_SLASH, {'/', KeyType::PUNCTUATION, KeyModifier::CTRL}},
+    {CONTROL_Q, {'Q', KeyType::ALPHA, KeyModifier::CTRL}},
 };
 
 std::optional<Key> keycode_to_key(int keycode);

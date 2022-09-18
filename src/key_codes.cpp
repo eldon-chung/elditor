@@ -16,15 +16,11 @@ std::optional<Key> keycode_to_key(int keycode) {
     return Key(keycode, KeyType::PUNCTUATION, KeyModifier::NONE);
   }
 
-  // Remaining case is that it's some form of modified key combination.
-  // Check to see if it's ctrl + [A-Z]
-  const char *keyname_str = keyname(keycode);
-  if (keyname_str[0] == '^' && std::isalpha(keyname_str[1]) &&
-      keyname_str[2] == '\0') {
-    return Key(keycode, KeyType::ALPHA, KeyModifier::CTRL);
-  }
-
-  std::unordered_map<int, int> testmap;
+  // const char *keyname_str = keyname(keycode);
+  // if (keyname_str[0] == '^' && std::isalpha(keyname_str[1]) &&
+  //     keyname_str[2] == '\0') {
+  //   return Key(keycode, KeyType::ALPHA, KeyModifier::CTRL);
+  // }
 
   // Otherwise we ignore the keycode
   return std::nullopt;

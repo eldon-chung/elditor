@@ -2,13 +2,13 @@ CXX := clang++
 CXXFLAGS := -g -O3 -std=c++20 -Wall -Wextra -Werror -pedantic
 LINKNCURSESFLAG := -lncurses 
 TICKITLINK :=  -ltickit
-DEPS := key_codes.h
+DEPS := TextBuffer.h key_codes.h
 # SRCDIR=./src/ 
 
 # scanner: scanner.o
 # 	$(CXX) -o $@ $^
 
-elditor: elditor.o
+elditor: elditor.o key_codes.o
 	$(CXX) -o $@ $^ $(LINKNCURSESFLAG)
 
 scanner: scanner.o key_codes.o

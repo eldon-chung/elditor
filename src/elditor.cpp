@@ -8,9 +8,45 @@ extern "C" {
 void initialise() {
   initscr();
   noecho();
-  cbreak();
+  // cbreak();
+  raw();
   keypad(stdscr, TRUE);
 }
+}
+
+void handle_key(TextBuffer &text_buffer, Key key) {
+  if (key.is_insertable()) {
+    text_buffer.insert_char_at(key.get_char());
+    return;
+  }
+
+  if (key.is_modified()) {
+    return;
+  }
+
+  if (key.is_type(KeyType::ENTER) && !key.is_modified()) {
+    text_buffer.insert_line_at();
+  }
+
+  if (key.is_type(KeyType::BACKSPACE) && !key.is_modified()) {
+    text_buffer.remove_char_at();
+  }
+
+  if (key.is_type(KeyType::ARROW)) {
+    std::cerr << "it's an arrow key" << std::endl;
+    if (key.has_keycode(UP)) {
+      text_buffer.move_cursor_up();
+    }
+    if (key.has_keycode(DOWN)) {
+      text_buffer.move_cursor_down();
+    }
+    if (key.has_keycode(LEFT)) {
+      text_buffer.move_cursor_left();
+    }
+    if (key.has_keycode(RIGHT)) {
+      text_buffer.move_cursor_right();
+    }
+  }
 }
 
 int main() {
@@ -23,25 +59,24 @@ int main() {
   // main event loop
   while (true) {
     int input_char = wgetch(stdscr);
-    // for now let's just handle alphabetic key chars;
-    if (std::isalpha(input_char)) {
-      // if char is alphabetic, we add it into a buffer
-      text_buffer.insert_char_at(input_char);
-      std::string buffer_contents = text_buffer.get_string();
-      wclear(stdscr);
-      waddstr(stdscr, buffer_contents.data());
-      refresh();
-    } else if (input_char == CONTROL_LEFT) {
-      wclear(stdscr);
-      waddstr(stdscr, "lctrl pressed");
-      refresh();
-    } else {
-      // if it's anything else we break from the main event loop;
+    std::optional<Key> opt_key = keycode_to_key(input_char);
+
+    if (!opt_key.has_value()) {
+      continue;
+    }
+
+    Key key = opt_key.value();
+    if (key.is_type(KeyType::ALPHA) && key.is_modified_by(KeyModifier::CTRL) &&
+        key.get_char() == 'Q') {
       break;
     }
 
-    // print contents of buffer into the screen
-    // ncurses printw expects a char* (we need to wrap around this too i guess)
+    handle_key(text_buffer, key);
+
+    // render the output
+    wclear(stdscr);
+    waddstr(stdscr, text_buffer.get_string().data());
+    wrefresh(stdscr);
   }
 
   delwin(stdscr);

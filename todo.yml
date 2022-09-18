@@ -1,8 +1,3 @@
 Current Goal:
-- do a basic wrapper over the current constructs before adding more features
-- find a nice list of keycode mappings so we can stop referring to them by name
-- maintain the current functionality but quit after ctrl C, nop for non alpha chars
+- make a sane wrapper honestly
 TODO:
-- learn from nano how they do key code assignment
-- handle line feeds/carriage returns?
-- handle basic movement keys
