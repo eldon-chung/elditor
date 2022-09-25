@@ -1,3 +1,40 @@
 Current Goal:
-- make a sane wrapper honestly
+1) Render cursor
+2) Control movement
+3) Single cursor selection
+  * Edit (insert/delete) selection
+  * Cancel and quit selection move
+4) File opening/saving
+
+Side Goals for Better Design:
+- Work on how cursor is implemented for textbuffer
+  * Consider making a cursor that has a "ghost" cursor inside the buffer
+  * That way we can keep a fake cursor that is what we expect it to be :(row, col)
+  * and an actual cursor that indices into our textbuffer
+- Work on making a rendering class
+  * There should be a rendering struct, or some form of element, that we can make
+  * whose responsibility is to render elements of our UI
+- Decide on a textbuffer API
+  * which things need to be leaked
+  * and which things should be abstracted
+- Some kind of textbufferview? one for rendering, one for algos
+
+Next milestone (notepad editor):
+- render a cursor (motivates building a library)
+- search (use kmp or something cool maybe)
+- line jumps, page jumps
+- cut/paste/multiline highlighting (requires better cursor manipulation)
+- add a save menu
+- implement opening files
+- delete key
+
 TODO:
+- Optional Word Wrapping
+- Syntax highlighting (for just C++ and idk.. python)
+- Formatting on save using like clang-formatter or pep 
+- Piece table because that’s the only real reason
+- Multicursor edits
+- Some very basic form of word suggest? 
+- A basic command palette (not that I know what to put in this yet. Maybe stuff like saving, new panes)
+- Not sure if I can but multiple panes? (I feel like this leads into the library project)
+- Smaller stuff would be like setting tab stops

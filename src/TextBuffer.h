@@ -92,4 +92,8 @@ struct TextBuffer {
     }
     return view_string;
   }
+
+  Cursor get_cursor() {
+    return m_cursor;
+  }
 };
