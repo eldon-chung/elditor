@@ -26,8 +26,3 @@ struct TextTag {
         m_end_col(end_col), m_colour(colour) {
   }
 };
-
-struct TaggedText {
-  Text text;
-  std::vector<std::vector<TextTag>> tags;
-};
