@@ -1,31 +1,58 @@
+#pragma once
+#include <cassert>
 #include <ncurses.h>
+#include <utility>
 
+#include "Colours.h"
+#include "Model.h"
+#include "Text.h"
+#include "TextTag.h"
 #include "TextWindow.h"
 
 // Serves as the driver for the entire view. For now let's keep it at a simple
 //  thing that just holds a text_window, and given the state that needs to be
 //  rendered drives the entire rendering logic
-struct View {
+class View {
+  Model const *m_model;
   TextWindow m_text_window;
+  std::pair<size_t, size_t> m_text_window_boundary;
 
 private:
-  View(WINDOW *main_window_ptr, int height, int width)
-      : text_window(main_window_ptr, height, width) {
+  View(Model *model, WINDOW *main_window_ptr, int height, int width)
+      : m_model(model), m_text_window(main_window_ptr, height, width),
+        m_text_window_boundary(0, height) {
   }
 
 public:
-  static View initialize() {
+  // important shit
+  View(View const &) = delete;
+  View &operator=(View const &) = delete;
+  View(View &&) = delete;
+  View &operator=(View &&) = delete;
+  ~View() {
+  }
+
+  static void init_view_colours() {
+    init_pair(COLOUR::NORMAL, COLOR_WHITE, -1);
+    init_pair(COLOUR::CURSOR, COLOR_BLACK, COLOR_WHITE);
+  }
+
+  static View initialize(Model *model) {
     initscr();
     start_color();
+    use_default_colors();
     noecho();
     raw();
+    curs_set(0);
     keypad(stdscr, TRUE);
+
     // get the screen height and width
-    int height;
-    int width;
+    int height, width;
     getmaxyx(stdscr, height, width);
+    std::cerr << "View: initialised with height and width " << height << " "
+              << width << std::endl;
     // construct the view with the main screen, and passing in height and width
-    return View(stdscr, height, width);
+    return View(model, stdscr, height, width);
   }
 
   // calls render on the relevant view elements, for now it's just a text view
@@ -33,10 +60,54 @@ public:
     m_text_window.render();
   }
 
-  // updates the required view elements?
-  // this should take in things agnostic to how view works, and view does the
-  // driving so view to should take a const ref to the Model and have free reign
-  // on how it reads? create a model_view that only has view access to the model
-  void update_view_state() {
+  void update_state() {
+    // get relevant portions of the model
+    Text text = m_model->get_text();
+    Cursor cursor = m_model->get_cursor();
+
+    // now add the cursor text tag
+    TextTag cursor_tag{cursor.row(), cursor.col(), COLOUR::CURSOR};
+    std::vector<TextTag> text_tags;
+    text_tags.push_back(cursor_tag);
+
+    // now update the states
+    // for the text window, we want to prepare the text exactly as it wants it
+    // we should eventually move this logic into a class that holds onto
+    // TextWindow but is a little more elaborate rather than keeping that state
+    // for ourselves e.g. the TextWindow boundaries and stuff
+
+    // first we update the boundaries if need be:
+    if (cursor.row() > m_text_window_boundary.second) {
+      assert(cursor.row() == m_text_window_boundary.second + 1);
+      std::cerr << "View : increasing boundary by 1" << std::endl;
+      m_text_window_boundary.first += 1;
+      m_text_window_boundary.second += 1;
+    } else if (cursor.row() < m_text_window_boundary.first) {
+      std::cerr << "View : decreasing boundary by 1" << std::endl;
+      assert(cursor.row() == m_text_window_boundary.first - 1);
+      m_text_window_boundary.first -= 1;
+      m_text_window_boundary.second -= 1;
+    }
+
+    // now based on these we fetch the required parts of the strings
+    std::vector<std::string_view> lines_to_render;
+    lines_to_render.reserve(m_text_window.height());
+
+    for (size_t row_idx = m_text_window_boundary.first;
+         row_idx < m_text_window_boundary.second && row_idx < text.num_lines();
+         row_idx++) {
+      // you can speed this up from L^2 where L is the number of lines
+      std::cerr << "View: pushing in line \"" << text.get_line_at(row_idx)
+                << "\"" << std::endl;
+      lines_to_render.push_back(text.get_line_at(row_idx));
+    }
+    // pad it so that we have the correct amount
+    while (lines_to_render.size() < m_text_window.height()) {
+      // not sure if this is the best way to handle it
+      // std::cerr << "View: adding in one line of padding" << std::endl;
+      lines_to_render.push_back(std::string_view(""));
+    }
+
+    m_text_window.update(std::move(lines_to_render), std::move(text_tags));
   }
 };

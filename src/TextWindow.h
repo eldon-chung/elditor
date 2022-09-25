@@ -1,3 +1,4 @@
+#pragma once
 #include <cassert>
 #include <deque>
 #include <ncurses.h>
@@ -28,39 +29,53 @@ struct TextWindow {
       : m_window_ptr(window_ptr), m_num_rows(num_rows), m_num_cols(num_cols),
         m_upper_boundary(upper_boundary), m_left_boundary(left_boundary) {
     for (size_t row = 0; row < m_num_rows; row++) {
-      m_lines.push_back(std::move(std::string("")));
+      m_lines.push_back(std::string(""));
     }
   }
 
-  void update(std::vector<std::string> &new_contents) {
+  void update(std::vector<std::string_view> &&new_contents,
+              std::vector<TextTag> &&text_tags) {
     assert(new_contents.size() == m_num_rows);
     m_lines.clear();
-    for (std::string &s : new_contents) {
-      m_lines.push_back(std::move(s));
+    for (std::string_view &s : new_contents) {
+      // std::cerr << "TextWindow: Updating line \"" << s << "\"" << std::endl;
+      m_lines.push_back(std::string(s));
     }
     new_contents.clear();
+
+    // add the colouring logic
+    for (TextTag tag : text_tags) {
+      // for now it's just cursor colour which should be simple
+      // https://linux.die.net/man/3/mvchgat
+    }
   }
 
   void set_left_boundary(size_t left_boundary) {
-    m_left_boundary = m_left_boundary;
+    m_left_boundary = left_boundary;
   }
 
   void render() {
     // clear the current screen
-    wclear(m_window_ptr);
+    werase(m_window_ptr);
     // get a "string_view" for each row and place it onto the screen
     for (size_t row_idx = 0; row_idx < m_num_rows; row_idx++) {
       if (m_left_boundary >= m_lines.at(row_idx).size()) {
         // if the starting column is too far right then we dont have to bother
+        // std::cerr << "TextWindow: Rendering empty line" << std::endl;
         mvwaddstr(m_window_ptr, row_idx, 0, "");
       } else {
         // else there get a view of the current string, starting from start_col
-        char *start_ptr = m_lines.at(row_idx).data() + m_left_boundary;
+        const char *start_ptr = m_lines.at(row_idx).data() + m_left_boundary;
         std::string_view rendered_line{start_ptr, m_num_cols};
+        // std::cerr << "TextWindow: Rendering " << rendered_line << std::endl;
         mvwaddstr(m_window_ptr, row_idx, 0, rendered_line.data());
       }
     }
 
     wrefresh(m_window_ptr);
+  }
+
+  size_t height() const {
+    return m_num_rows;
   }
 };
