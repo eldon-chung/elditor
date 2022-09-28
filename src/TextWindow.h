@@ -53,18 +53,26 @@ struct TextWindow {
     // clear the current screen
     werase(m_window_ptr);
     // get a "string_view" for each row and place it onto the screen
+    // for (size_t row_idx = 0; row_idx < m_num_rows; row_idx++) {
+    //   if (m_left_boundary >= m_lines.at(row_idx).size()) {
+    //     // if the starting column is too far right then we dont have to
+    //     bother
+    //     // std::cerr << "TextWindow: Rendering empty line" << std::endl;
+    //     mvwaddstr(m_window_ptr, row_idx, 0, "");
+    //   } else {
+    //     // else there get a view of the current string, starting from
+    //     start_col const char *start_ptr = m_lines.at(row_idx).data() +
+    //     m_left_boundary; std::string_view rendered_line{start_ptr,
+    //     m_num_cols};
+    //     // std::cerr << "TextWindow: Rendering " << rendered_line <<
+    //     // std::endl;
+    //     mvwaddstr(m_window_ptr, row_idx, 0, rendered_line.data());
+    //   }
+    // }
+
     for (size_t row_idx = 0; row_idx < m_num_rows; row_idx++) {
-      if (m_left_boundary >= m_lines.at(row_idx).size()) {
-        // if the starting column is too far right then we dont have to bother
-        // std::cerr << "TextWindow: Rendering empty line" << std::endl;
-        mvwaddstr(m_window_ptr, row_idx, 0, "");
-      } else {
-        // else there get a view of the current string, starting from start_col
-        const char *start_ptr = m_lines.at(row_idx).data() + m_left_boundary;
-        std::string_view rendered_line{start_ptr, m_num_cols};
-        // std::cerr << "TextWindow: Rendering " << rendered_line << std::endl;
-        mvwaddstr(m_window_ptr, row_idx, 0, rendered_line.data());
-      }
+
+      mvwaddstr(m_window_ptr, row_idx, 0, m_lines.at(row_idx).data());
     }
 
     // place the attributes on the screen

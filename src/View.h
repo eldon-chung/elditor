@@ -8,6 +8,7 @@
 #include "Text.h"
 #include "TextTag.h"
 #include "TextWindow.h"
+#include "WindowBorder.h"
 
 // Serves as the driver for the entire view. For now let's keep it at a simple
 //  thing that just holds a text_window, and given the state that needs to be
@@ -15,12 +16,12 @@
 class View {
   Model const *m_model;
   TextWindow m_text_window;
-  std::pair<size_t, size_t> m_text_window_boundary;
+  WindowBorder m_text_window_border;
 
 private:
   View(Model *model, WINDOW *main_window_ptr, int height, int width)
       : m_model(model), m_text_window(main_window_ptr, height, width),
-        m_text_window_boundary(0, height) {
+        m_text_window_border(height, width) {
   }
 
 public:
@@ -65,14 +66,25 @@ public:
     Text text = m_model->get_text();
     Cursor cursor = m_model->get_cursor();
 
+    // update the window to "chase the cursor"
+    m_text_window_border.chase_point(cursor.row(), cursor.col());
+
     // now based on these we fetch the required parts of the strings
     std::vector<std::string_view> lines_to_render;
     lines_to_render.reserve(m_text_window.height());
 
-    for (size_t row_idx = m_text_window_boundary.first;
-         row_idx < m_text_window_boundary.second && row_idx < text.num_lines();
+    for (size_t row_idx = m_text_window_border.starting_row();
+         row_idx < (size_t)m_text_window_border.ending_row() &&
+         row_idx < text.num_lines();
          row_idx++) {
-      lines_to_render.push_back(text.get_line_at(row_idx));
+      if ((size_t)m_text_window_border.starting_col() >=
+          text.get_line_at(row_idx).size()) {
+        lines_to_render.emplace_back(std::string_view{""});
+      } else {
+        lines_to_render.push_back(text.get_line_at(row_idx).substr(
+            m_text_window_border.starting_col(),
+            m_text_window_border.width() - 1));
+      }
     }
     // pad it so that we have the correct amount
     while (lines_to_render.size() < m_text_window.height()) {
@@ -80,6 +92,8 @@ public:
     }
 
     m_text_window.update(std::move(lines_to_render));
-    m_text_window.add_attribute(cursor.row(), cursor.col(), 1, A_STANDOUT, 0);
+    m_text_window.add_attribute(
+        cursor.row() - m_text_window_border.starting_row(),
+        cursor.col() - m_text_window_border.starting_col(), 1, A_STANDOUT, 0);
   }
 };
