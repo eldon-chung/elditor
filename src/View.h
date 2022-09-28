@@ -65,30 +65,6 @@ public:
     Text text = m_model->get_text();
     Cursor cursor = m_model->get_cursor();
 
-    // now add the cursor text tag
-    TextTag cursor_tag{cursor.row(), cursor.col(), COLOUR::CURSOR};
-    std::vector<TextTag> text_tags;
-    text_tags.push_back(cursor_tag);
-
-    // now update the states
-    // for the text window, we want to prepare the text exactly as it wants it
-    // we should eventually move this logic into a class that holds onto
-    // TextWindow but is a little more elaborate rather than keeping that state
-    // for ourselves e.g. the TextWindow boundaries and stuff
-
-    // first we update the boundaries if need be:
-    if (cursor.row() > m_text_window_boundary.second) {
-      assert(cursor.row() == m_text_window_boundary.second + 1);
-      std::cerr << "View : increasing boundary by 1" << std::endl;
-      m_text_window_boundary.first += 1;
-      m_text_window_boundary.second += 1;
-    } else if (cursor.row() < m_text_window_boundary.first) {
-      std::cerr << "View : decreasing boundary by 1" << std::endl;
-      assert(cursor.row() == m_text_window_boundary.first - 1);
-      m_text_window_boundary.first -= 1;
-      m_text_window_boundary.second -= 1;
-    }
-
     // now based on these we fetch the required parts of the strings
     std::vector<std::string_view> lines_to_render;
     lines_to_render.reserve(m_text_window.height());
@@ -96,18 +72,14 @@ public:
     for (size_t row_idx = m_text_window_boundary.first;
          row_idx < m_text_window_boundary.second && row_idx < text.num_lines();
          row_idx++) {
-      // you can speed this up from L^2 where L is the number of lines
-      std::cerr << "View: pushing in line \"" << text.get_line_at(row_idx)
-                << "\"" << std::endl;
       lines_to_render.push_back(text.get_line_at(row_idx));
     }
     // pad it so that we have the correct amount
     while (lines_to_render.size() < m_text_window.height()) {
-      // not sure if this is the best way to handle it
-      // std::cerr << "View: adding in one line of padding" << std::endl;
       lines_to_render.push_back(std::string_view(""));
     }
 
-    m_text_window.update(std::move(lines_to_render), std::move(text_tags));
+    m_text_window.update(std::move(lines_to_render));
+    m_text_window.add_attribute(cursor.row(), cursor.col(), 1, A_STANDOUT, 0);
   }
 };

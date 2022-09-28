@@ -37,7 +37,7 @@ void handle_key(Model &model, Key key) {
   }
 
   if (key.is_type(KeyType::ARROW)) {
-    std::cerr << "it's an arrow key" << std::endl;
+    // std::cerr << "it's an arrow key" << std::endl;
     if (key.has_keycode(UP)) {
       model.move_cursor_up();
     }
@@ -60,6 +60,7 @@ int main() {
 
   // main event loop
   while (true) {
+    // make this nonblocking
     int input_char = wgetch(stdscr);
     std::optional<Key> opt_key = keycode_to_key(input_char);
 

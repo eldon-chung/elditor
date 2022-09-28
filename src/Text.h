@@ -25,6 +25,7 @@ struct Text {
   }
 
   std::string_view get_line_at(size_t line_idx) const {
+    // this solution is quite slow right now
     size_t left_idx = 0;
     for (size_t idx = 0; idx < line_idx; idx++) {
       left_idx += m_line_lengths.at(idx) + 1;

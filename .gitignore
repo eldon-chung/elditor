@@ -38,3 +38,5 @@ src/keys
 src/scanner
 src/elditor
 src/debug_log
+src/compile_commands.json
+src/.cache/*

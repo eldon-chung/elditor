@@ -1,3 +1,7 @@
+Fixes:
+1) TextWindow feeds too much of the string i.e. [start column, end of string)
+  To fix this, you need to truncate it in case the string is too long
+
 Current Goal:
 1) Render cursor
 2) Control movement

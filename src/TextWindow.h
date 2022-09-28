@@ -6,48 +6,43 @@
 #include <vector>
 
 #include "Cursor.h"
+#include "TextAttribute.h"
 
 struct TextWindow {
   WINDOW *m_window_ptr;
   std::deque<std::string> m_lines;
+  std::vector<TextAttribute> m_text_attributes;
+  // left_boundary
+  size_t m_left_boundary;
   // height of the screen
   size_t m_num_rows;
   // width of the screen
   size_t m_num_cols;
-  // currently unused
-  size_t m_upper_boundary;
-  // which column of text to start the render
-  size_t m_left_boundary;
 
   // if the boundaries are not defined, we delegate its construction
   TextWindow(WINDOW *window_ptr, size_t num_rows, size_t num_cols)
-      : TextWindow(window_ptr, num_rows, num_cols, 0, 0) {
+      : TextWindow(window_ptr, num_rows, num_cols, 0) {
   }
 
   TextWindow(WINDOW *window_ptr, size_t num_rows, size_t num_cols,
-             size_t upper_boundary, size_t left_boundary)
-      : m_window_ptr(window_ptr), m_num_rows(num_rows), m_num_cols(num_cols),
-        m_upper_boundary(upper_boundary), m_left_boundary(left_boundary) {
+             size_t left_boundary)
+      : m_window_ptr(window_ptr), m_left_boundary(left_boundary),
+        m_num_rows(num_rows), m_num_cols(num_cols) {
     for (size_t row = 0; row < m_num_rows; row++) {
       m_lines.push_back(std::string(""));
     }
   }
 
-  void update(std::vector<std::string_view> &&new_contents,
-              std::vector<TextTag> &&text_tags) {
+  void update(std::vector<std::string_view> &&new_contents) {
     assert(new_contents.size() == m_num_rows);
+    m_text_attributes.clear();
     m_lines.clear();
     for (std::string_view &s : new_contents) {
       // std::cerr << "TextWindow: Updating line \"" << s << "\"" << std::endl;
       m_lines.push_back(std::string(s));
     }
     new_contents.clear();
-
-    // add the colouring logic
-    for (TextTag tag : text_tags) {
-      // for now it's just cursor colour which should be simple
-      // https://linux.die.net/man/3/mvchgat
-    }
+    // subsequently add in the attributes as well
   }
 
   void set_left_boundary(size_t left_boundary) {
@@ -72,10 +67,28 @@ struct TextWindow {
       }
     }
 
+    // place the attributes on the screen
+    wstandend(m_window_ptr);
+    for (TextAttribute &text_attribute : m_text_attributes) {
+      mvwchgat(m_window_ptr, text_attribute.y(), text_attribute.x(),
+               text_attribute.n(), text_attribute.attribute(),
+               text_attribute.colour(), NULL);
+    }
+
+    // mvwchgat(m_window_ptr, 0, 0, 1, A_STANDOUT, 0, NULL);
+    // waddch('c');
+
     wrefresh(m_window_ptr);
   }
 
   size_t height() const {
     return m_num_rows;
+  }
+
+  void add_attribute(int y, int x, int length, attr_t attribute, short color) {
+    // translate this into an attribute in the window;
+    assert((size_t)x >= m_left_boundary);
+    m_text_attributes.emplace_back(y, x - m_left_boundary, length, attribute,
+                                   color);
   }
 };
