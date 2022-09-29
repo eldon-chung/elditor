@@ -114,6 +114,7 @@ struct TextBuffer {
 
       // update the cursor
       m_cursor.col() = col_length;
+      m_cursor.row()--;
 
     } else if (m_cursor.col() > 0) {
       m_text_buffer[m_cursor.row()].erase(m_cursor.col() - 1, 1);
