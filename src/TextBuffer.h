@@ -1,105 +1,101 @@
+#pragma once
 
 #include <cassert>
 #include <cstdint>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
-
-#pragma once
 
 #include "Cursor.h"
 #include "Text.h"
 // a basic text buffer that we can change later
 // follow up question: should we make a "cursor aware" buffer?
 // or perhaps a "buffer aware" cursor?
-struct TextBuffer {
-
+class TextBuffer {
   std::vector<std::string> m_text_buffer;
-  Cursor m_cursor;
 
+public:
   // subsequently make one that is initialised with contents
-  TextBuffer() : m_cursor(0, 0, 0) {
+  TextBuffer() {
     // make an initial vector
     m_text_buffer.emplace_back(std::string(""));
   }
 
   // manipulate the cursor
-  void move_cursor_up(Cursor &model_cursor) {
-    if (m_cursor.row() > 0) {
-      m_cursor.row()--;
+  void move_cursor_up(CursorPoint &cursor_point) {
+    if (cursor_point.row() > 0) {
+      cursor_point.row()--;
       // update the column with a simple method for now
-      m_cursor.col() = std::min(m_cursor.original_col(),
-                                m_text_buffer.at(m_cursor.row()).size());
+      cursor_point.col() = std::min(cursor_point.original_col(), m_text_buffer.at(cursor_point.row()).size());
     }
-
-    // update the model_cursor as-is (this logic changes when we swap up the
-    // cursor)
-    model_cursor = m_cursor;
   }
 
-  void move_cursor_down(Cursor &model_cursor) {
-    if (m_cursor.row() + 1 < m_text_buffer.size()) {
-      m_cursor.row()++;
-      m_cursor.col() = std::min(m_text_buffer[m_cursor.row()].length(),
-                                m_cursor.original_col());
+  void move_cursor_down(CursorPoint &cursor_point) {
+    if (cursor_point.row() + 1 < m_text_buffer.size()) {
+      cursor_point.row()++;
+      cursor_point.col() = std::min(m_text_buffer[cursor_point.row()].length(), cursor_point.original_col());
     }
-    // update the model_cursor as-is (this logic changes when we swap up the
-    // cursor)
-    model_cursor = m_cursor;
   }
 
-  void move_cursor_left(Cursor &model_cursor) {
-    std::cerr << "TB: starting move left" << std::endl;
-    if (m_cursor.col() > 0) {
-      std::cerr << "TB: move left first case" << std::endl;
-
-      m_cursor.col()--;
-    } else if (m_cursor.row() > 0) {
-      assert(m_cursor.col() == 0);
+  void move_cursor_left(CursorPoint &cursor_point) {
+    if (cursor_point.col() > 0) {
+      cursor_point.col()--;
+    } else if (cursor_point.row() > 0) {
+      assert(cursor_point.col() == 0);
       // we move it to the previous line if needed
-      std::cerr << "TB: move left second case" << std::endl;
-
-      m_cursor.row()--;
-      m_cursor.col() = m_text_buffer.at(m_cursor.row()).size();
+      cursor_point.row()--;
+      cursor_point.col() = m_text_buffer.at(cursor_point.row()).size();
     }
 
-    m_cursor.original_col() = m_cursor.col();
-    std::cerr << "TB: after moving left: row col ori:" << m_cursor.row() << " "
-              << m_cursor.col() << " " << m_cursor.original_col() << std::endl;
-    model_cursor = m_cursor;
+    cursor_point.original_col() = cursor_point.col();
   }
 
-  void move_cursor_right(Cursor &model_cursor) {
-    std::cerr << "TB: starting move right from " << m_cursor.row() << " "
-              << m_cursor.col() << std::endl;
-    std::cerr << "TB: line length is " << m_text_buffer[m_cursor.row()].length()
-              << std::endl;
-    if (m_cursor.col() + 1 <= m_text_buffer[m_cursor.row()].length()) {
-      std::cerr << "TB: move right first case" << std::endl;
-      m_cursor.col()++;
-    } else if (m_cursor.col() == m_text_buffer[m_cursor.row()].length() &&
-               m_cursor.row() + 1 < m_text_buffer.size()) {
-      std::cerr << "TB: move right second case" << std::endl;
-
-      m_cursor.row()++;
-      m_cursor.col() = 0;
+  void move_cursor_right(CursorPoint &cursor_point) {
+    if (cursor_point.col() + 1 <= m_text_buffer[cursor_point.row()].length()) {
+      cursor_point.col()++;
+    } else if (cursor_point.col() == m_text_buffer[cursor_point.row()].length() &&
+               cursor_point.row() + 1 < m_text_buffer.size()) {
+      cursor_point.row()++;
+      cursor_point.col() = 0;
     }
 
-    m_cursor.original_col() = m_cursor.col();
-    std::cerr << "TB: after moving right: row col ori:" << m_cursor.row() << " "
-              << m_cursor.col() << " " << m_cursor.original_col() << std::endl;
-    model_cursor = m_cursor;
+    cursor_point.original_col() = cursor_point.col();
   }
 
   // insertion requires some form of specification
   // but for now let's just make it append
-  void insert_char_at(char to_insert, Cursor &model_cursor) {
-    m_text_buffer[m_cursor.row()].insert(m_cursor.col(), 1, to_insert);
-    m_cursor.col()++;
-    m_cursor.original_col() = m_cursor.col();
-    // update the model_cursor as-is (this logic changes when we swap up the
-    // cursor)
-    model_cursor = m_cursor;
+  void insert_char_at(std::string to_insert, Cursor &cursor) {
+    // no text must be in selection when inserting text
+    assert(!cursor.in_selection_mode());
+
+    std::vector<std::string_view> broken_lines = break_lines(to_insert);
+    assert(!broken_lines.empty());
+
+    if (broken_lines.size() == 1) {
+      // if there is only a single line then it should just hold the entirely of to_insert
+      assert(to_insert == broken_lines.at(0));
+      size_t to_insert_len = to_insert.size();
+      // push the entire line into to the current line
+      m_text_buffer[cursor.row()].insert(cursor.col(), std::move(to_insert));
+      // update the cursor
+      cursor.col() += to_insert_len;
+      cursor.reset_original_col();
+      return;
+    }
+
+    // construct the right half (what happens when you move from back; probably impl defined)
+    std::string right_half{std::move(broken_lines.back())};
+    broken_lines.pop_back();
+    right_half.append(m_text_buffer[cursor.row()], cursor.col(), std::string::npos);
+
+    // truncate down the left half
+    m_text_buffer[cursor.row()].resize(cursor.col());
+    m_text_buffer[cursor.row()].append(std::move(broken_lines.front()));
+
+    // insert the middle portion
+
+    // update the cursor
   }
 
   void remove_char_at(Cursor &model_cursor) {
@@ -125,23 +121,23 @@ struct TextBuffer {
   }
 
   void insert_line_at(Cursor &model_cursor) {
+    // must inset without having anything selected
+    assert(!model_cursor.in_selection_mode());
+
     // split the string at the current pos.
     // annoying things about being at the end of line
+
     if (m_cursor.col() == m_text_buffer[m_cursor.row()].length()) {
-      m_text_buffer.insert(m_text_buffer.begin() + m_cursor.row() + 1,
-                           std::string(""));
+      m_text_buffer.insert(m_text_buffer.begin() + m_cursor.row() + 1, std::string(""));
     } else if (m_cursor.col() == 0) {
-      m_text_buffer.insert(m_text_buffer.begin() + m_cursor.row(),
-                           std::string(""));
+      m_text_buffer.insert(m_text_buffer.begin() + m_cursor.row(), std::string(""));
     } else {
       // get the second half of the current string
-      std::string second_half =
-          m_text_buffer.at(m_cursor.row()).substr(m_cursor.col());
+      std::string second_half = m_text_buffer.at(m_cursor.row()).substr(m_cursor.col());
       // truncate the original string to the first half
       m_text_buffer.at(m_cursor.row()).resize(m_cursor.col());
 
-      m_text_buffer.insert(m_text_buffer.begin() + m_cursor.row() + 1,
-                           std::move(second_half));
+      m_text_buffer.insert(m_text_buffer.begin() + m_cursor.row() + 1, std::move(second_half));
     }
     m_cursor.col() = 0;
     m_cursor.original_col() = 0;
@@ -183,7 +179,25 @@ struct TextBuffer {
     return Text{std::move(view_string), std::move(line_lengths)};
   }
 
-  Cursor get_cursor() const {
-    return m_cursor;
+private:
+  std::vector<std::string_view> break_lines(std::string const &str) {
+    assert(!str.empty());
+    std::string_view str_view{str};
+    std::vector<std::string_view> lines;
+    do {
+      size_t newl_idx = str_view.find_first_of("\n");
+      if (newl_idx == std::string::npos) {
+        lines.push_back(str_view);
+        break;
+      }
+      lines.push_back(std::string_view{str_view.data(), newl_idx});
+      str_view.remove_prefix(newl_idx + 1);
+      if (str_view.empty()) {
+        // if it's empty right after removing, it ended on a newline
+        // so we need to append one more string
+        lines.push_back("");
+      }
+    } while (!str_view.empty());
+    return lines;
   }
 };
