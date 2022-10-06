@@ -26,36 +26,12 @@ std::vector<std::string_view> break_lines(std::string const &str) {
 }
 
 int main() {
-  std::string str{"abcdef"};
+  std::vector<int> v{0, 1, 2, 3, 4};
 
-  std::vector<std::string_view> line_list = break_lines(str);
-  std::cout << "printing lines" << std::endl;
-  for (std::string_view line : line_list) {
-    std::cout << "[" << line << "]" << std::endl;
+  std::vector<int> other{10, 11, 12};
+  v.erase(v.begin() + 1, v.begin() + 5);
+  // v.insert(v.begin() + 6, other.begin() + 1, other.end());
+  for (int x : v) {
+    std::cout << x << std::endl;
   }
-
-  std::cout << (str == line_list.at(0)) << std::endl;
-
-  // std::string halved{str, 4};
-  // std::cout << "[" << halved << "]" << std::endl;
-  // str.resize(4);
-  // std::cout << "[" << str << "]" << std::endl;
-  // std::vector<int> original{0, 1, 2, 3, 4, 5};
-
-  // std::vector<int> middle{50, 51, 52};
-  // original.insert(original.begin() + 6, middle.begin() + 1, middle.end());
-
-  // std::cout << "[";
-  // for (int x : original) {
-  //   std::cout << x << ",";
-  // }
-  // std::cout << "]";
-
-  // std::string original{"0123456"};
-  // std::string mid{"<middle part>"};
-
-  // std::string_view view{original.begin() + 2, original.end()};
-  // std::cout << view << std::endl;
-  // original.insert(2, mid);
-  // std::cout << original << std::endl;
 }

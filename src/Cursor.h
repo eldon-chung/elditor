@@ -12,6 +12,9 @@ public:
       : m_row(row), m_col(col), m_original_col(original_col) {
   }
 
+  CursorPoint(CursorPoint const &other) = default;
+  CursorPoint &operator=(CursorPoint const &other) = default;
+
   size_t &row() {
     return m_row;
   }
@@ -29,7 +32,7 @@ public:
   }
 
   void move_to_col(size_t col) {
-    m_col;
+    m_col = col;
   }
 
   void reset_to_col(size_t col) {
@@ -50,7 +53,7 @@ public:
   }
 
   void reset_original_col() {
-    m_col = m_original_col;
+    m_original_col = m_col;
   }
 
   bool operator==(CursorPoint const &other) const {
@@ -63,6 +66,12 @@ public:
 
   bool is_behind(CursorPoint const &other) const {
     return m_row < other.row() || (m_row == other.row() && m_col < other.col());
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, CursorPoint const &c_point) {
+    os << "{ row: " << c_point.m_row << ",\n col: " << c_point.m_col
+       << ",\n original_col: " << c_point.m_original_col << "}";
+    return os;
   }
 };
 
@@ -85,15 +94,32 @@ public:
 
   bool in_selection_mode() const {
     // we are not selecting place if and only if they are currently sitting in the same place
-    return m_active_point.in_same_place(m_trailing_point);
+    return !m_active_point.in_same_place(m_trailing_point);
   }
 
   bool active_point_is_behind_trailing_point() {
     return m_active_point.is_behind(m_trailing_point);
   }
 
+  std::pair<CursorPoint &, CursorPoint &> get_points_in_order() {
+    if (active_point_is_behind_trailing_point()) {
+      return {m_active_point, m_trailing_point};
+    } else {
+      return {m_trailing_point, m_active_point};
+    }
+  }
+
   void reset_original_col() {
     m_active_point.reset_original_col();
+  }
+
+  void reset_trailing_point() {
+    m_trailing_point = m_active_point;
+  }
+
+  void reset_to_point(CursorPoint const &point) {
+    m_active_point = point;
+    m_trailing_point = point;
   }
 
   // Gets the row of cursor's active point
@@ -137,7 +163,13 @@ public:
   }
 
   // Gets the original_col of cursor's trailing point
-  size_t original_col() const {
+  size_t trailing_original_col() const {
     return m_trailing_point.original_col();
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, Cursor const &cursor) {
+    os << "{ m_active_point: " << cursor.m_active_point << "}\n\n m_trailing_point: {"
+       << cursor.m_trailing_point << "}";
+    return os;
   }
 };

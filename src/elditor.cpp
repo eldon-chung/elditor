@@ -20,7 +20,7 @@ void initialise() {
 
 void handle_key(Model &model, Key key) {
   if (key.is_insertable()) {
-    model.insert_char(key.get_char());
+    model.insert_string(std::string(1, key.get_char()));
     return;
   }
 
@@ -29,7 +29,7 @@ void handle_key(Model &model, Key key) {
   }
 
   if (key.is_type(KeyType::ENTER) && !key.is_modified()) {
-    model.insert_line();
+    model.insert_string(std::string("\n"));
   }
 
   if (key.is_type(KeyType::BACKSPACE) && !key.is_modified()) {
@@ -72,8 +72,7 @@ int main() {
     // example of capturing something; we should shift this logic somewhere else
     // eventually i think
     Key key = opt_key.value();
-    if (key.is_type(KeyType::ALPHA) && key.is_modified_by(KeyModifier::CTRL) &&
-        key.get_char() == 'Q') {
+    if (key.is_type(KeyType::ALPHA) && key.is_modified_by(KeyModifier::CTRL) && key.get_char() == 'Q') {
       break;
     }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <curses.h>
 #include <ncurses.h>
 #include <utility>
 
@@ -19,8 +20,7 @@ class View {
 
 private:
   View(Model *model, WINDOW *main_window_ptr, int height, int width)
-      : m_model(model), m_text_window(main_window_ptr, height, width),
-        m_text_window_boundary(0, height) {
+      : m_model(model), m_text_window(main_window_ptr, height, width), m_text_window_boundary(0, height) {
   }
 
 public:
@@ -49,8 +49,7 @@ public:
     // get the screen height and width
     int height, width;
     getmaxyx(stdscr, height, width);
-    std::cerr << "View: initialised with height and width " << height << " "
-              << width << std::endl;
+    std::cerr << "View: initialised with height and width " << height << " " << width << std::endl;
     // construct the view with the main screen, and passing in height and width
     return View(model, stdscr, height, width);
   }
@@ -70,8 +69,7 @@ public:
     lines_to_render.reserve(m_text_window.height());
 
     for (size_t row_idx = m_text_window_boundary.first;
-         row_idx < m_text_window_boundary.second && row_idx < text.num_lines();
-         row_idx++) {
+         row_idx < m_text_window_boundary.second && row_idx < text.num_lines(); row_idx++) {
       lines_to_render.push_back(text.get_line_at(row_idx));
     }
     // pad it so that we have the correct amount
@@ -80,6 +78,7 @@ public:
     }
 
     m_text_window.update(std::move(lines_to_render));
-    m_text_window.add_attribute(cursor.row(), cursor.col(), 1, A_STANDOUT, 0);
+    // m_text_window.add_attribute(cursor.row(), cursor.col(), 1, A_STANDOUT, 0);
+    m_text_window.add_attribute(cursor.row(), cursor.col(), 1, WA_LEFT, 0);
   }
 };
