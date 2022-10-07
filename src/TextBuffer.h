@@ -27,8 +27,10 @@ public:
       cursor_point.row()--;
       cursor_point.col() = std::min(cursor_point.original_col(), m_text_buffer.at(cursor_point.row()).size());
     } else {
+      // else we must be on the top most row, in which case we move the cursor all the way left
       assert(cursor_point.row() == 0);
       cursor_point.col() = 0;
+      cursor_point.reset_original_col();
     }
     assert(within_bounds(cursor_point));
   }
@@ -40,8 +42,10 @@ public:
       cursor_point.row()++;
       cursor_point.col() = std::min(m_text_buffer.at(cursor_point.row()).size(), cursor_point.original_col());
     } else {
+      // else we must be on the bottom most row, in which case we move the cursor all the way right
       assert(cursor_point.row() + 1 == m_text_buffer.size());
       cursor_point.col() = m_text_buffer.at(cursor_point.row()).size();
+      cursor_point.reset_original_col();
     }
     assert(within_bounds(cursor_point));
   }
@@ -100,10 +104,11 @@ public:
       // store the size the column needs to be for later
       size_t final_column = broken_lines.back().size();
 
-      // get the second half of the line at row(), it needs to be prepended to the last of broken_lines
+      // get the second half of the line at row(), it needs to be appended to the last of broken_lines
       std::string_view second_half_of_current_line{m_text_buffer.at(cursor.row()).cbegin() + cursor.col(),
                                                    m_text_buffer.at(cursor.row()).cend()};
-      broken_lines.back().insert(0, second_half_of_current_line);
+      // broken_lines.back().insert(0, second_half_of_current_line);
+      broken_lines.back().append(second_half_of_current_line);
 
       // truncate the current line at row()
       m_text_buffer.at(cursor.row()).resize(cursor.col());
