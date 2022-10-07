@@ -79,6 +79,6 @@ public:
 
     m_text_window.update(std::move(lines_to_render));
     // m_text_window.add_attribute(cursor.row(), cursor.col(), 1, A_STANDOUT, 0);
-    m_text_window.add_attribute(cursor.row(), cursor.col(), 1, WA_LEFT, 0);
+    m_text_window.add_attribute(cursor.row(), cursor.col(), 1, A_STANDOUT, 0);
   }
 };
