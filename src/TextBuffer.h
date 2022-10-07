@@ -215,6 +215,8 @@ private:
   }
 
 public:
+  // All the getters
+
   // Returns the entire contents of the text buffer as a single string
   std::string get_as_string() const {
     std::string view_string{""};
@@ -225,8 +227,49 @@ public:
     return view_string;
   }
 
+  // Returns the line indexed at line_idx as a single string
   std::string get_line_as_string(size_t line_idx) const {
     return m_text_buffer.at(line_idx);
+  }
+
+  // Returns the line indexed at line_idx as a single string_view
+  std::string_view get_line_as_string_view(size_t line_idx) const {
+    return m_text_buffer.at(line_idx);
+  }
+
+  // Returns the portion of the text specified by the cursor as a single string
+  std::string get_string_selected_by(Cursor const &cursor) const {
+    // check that the cursor is in selection mode so we should be returning a non-empty string
+    assert(!cursor.in_selection_mode());
+    std::string built_string{""};
+
+    std::pair<CursorPoint const &, CursorPoint const &> c_point_pair = cursor.get_const_points_in_order();
+    CursorPoint const &left_point = c_point_pair.first;
+    CursorPoint const &right_point = c_point_pair.second;
+
+    assert(left_point.row() < right_point.row() ||
+           ((left_point.row() == right_point.row()) && left_point.col() < right_point.col()));
+
+    if (left_point.row() == right_point.row()) {
+      assert(left_point.col() < right_point.col());
+      std::string const &relevant_line = m_text_buffer.at(left_point.row());
+      built_string.append(relevant_line.substr(left_point.col(), right_point.col() - left_point.col()));
+    } else {
+      // append the tail end of the uppermost row
+      std::string const &relevant_line = m_text_buffer.at(left_point.row());
+      built_string.append(relevant_line.substr(left_point.col(), std::string::npos));
+      built_string.append("\n");
+      // append all the lines in between (and skip the first one)
+      for (size_t line_idx = left_point.row() + 1; line_idx < right_point.row(); ++line_idx) {
+        built_string.append(m_text_buffer.at(line_idx));
+        built_string.append("\n");
+      }
+
+      // append the head end of the lowest row
+      std::string_view truncated{m_text_buffer.at(right_point.row()).data(), right_point.col()};
+      built_string.append(truncated);
+    }
+    return built_string;
   }
 
   Text get_text() const {

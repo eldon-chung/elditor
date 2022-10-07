@@ -97,11 +97,21 @@ public:
     return !m_active_point.in_same_place(m_trailing_point);
   }
 
-  bool active_point_is_behind_trailing_point() {
+  bool active_point_is_behind_trailing_point() const {
     return m_active_point.is_behind(m_trailing_point);
   }
 
   std::pair<CursorPoint &, CursorPoint &> get_points_in_order() {
+    if (active_point_is_behind_trailing_point()) {
+      return {m_active_point, m_trailing_point};
+    } else {
+      return {m_trailing_point, m_active_point};
+    }
+  }
+
+  std::pair<CursorPoint const &, CursorPoint const &> get_const_points_in_order() const {
+    // at this point might as well return by value rather than by const ref
+    //  todo: decide to revise this later on
     if (active_point_is_behind_trailing_point()) {
       return {m_active_point, m_trailing_point};
     } else {
