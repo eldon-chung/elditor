@@ -30,6 +30,8 @@ public:
     m_text_buffer.remove_string_at(m_cursor);
   }
 
+  // Base cursor movement
+
   void move_cursor_up() {
     m_text_buffer.move_cursor_up(m_cursor.active_point());
     m_cursor.reset_trailing_point();
@@ -48,6 +50,24 @@ public:
   void move_cursor_right() {
     m_text_buffer.move_cursor_right(m_cursor.active_point());
     m_cursor.reset_trailing_point();
+  }
+
+  // Shift cursor movement
+
+  void shift_cursor_up() {
+    m_text_buffer.move_cursor_up(m_cursor.active_point());
+  }
+
+  void shift_cursor_down() {
+    m_text_buffer.move_cursor_down(m_cursor.active_point());
+  }
+
+  void shift_cursor_left() {
+    m_text_buffer.move_cursor_left(m_cursor.active_point());
+  }
+
+  void shift_cursor_right() {
+    m_text_buffer.move_cursor_right(m_cursor.active_point());
   }
 
   // const view api

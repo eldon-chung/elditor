@@ -24,10 +24,8 @@ struct TextWindow {
       : TextWindow(window_ptr, num_rows, num_cols, 0) {
   }
 
-  TextWindow(WINDOW *window_ptr, size_t num_rows, size_t num_cols,
-             size_t left_boundary)
-      : m_window_ptr(window_ptr), m_left_boundary(left_boundary),
-        m_num_rows(num_rows), m_num_cols(num_cols) {
+  TextWindow(WINDOW *window_ptr, size_t num_rows, size_t num_cols, size_t left_boundary)
+      : m_window_ptr(window_ptr), m_left_boundary(left_boundary), m_num_rows(num_rows), m_num_cols(num_cols) {
     for (size_t row = 0; row < m_num_rows; row++) {
       m_lines.push_back(std::string(""));
     }
@@ -70,9 +68,8 @@ struct TextWindow {
     // place the attributes on the screen
     wstandend(m_window_ptr);
     for (TextAttribute &text_attribute : m_text_attributes) {
-      mvwchgat(m_window_ptr, text_attribute.y(), text_attribute.x(),
-               text_attribute.n(), text_attribute.attribute(),
-               text_attribute.colour(), NULL);
+      mvwchgat(m_window_ptr, text_attribute.y(), text_attribute.x(), text_attribute.n(),
+               text_attribute.attribute(), text_attribute.colour(), NULL);
     }
 
     // mvwchgat(m_window_ptr, 0, 0, 1, A_STANDOUT, 0, NULL);
@@ -88,7 +85,10 @@ struct TextWindow {
   void add_attribute(int y, int x, int length, attr_t attribute, short color) {
     // translate this into an attribute in the window;
     assert((size_t)x >= m_left_boundary);
-    m_text_attributes.emplace_back(y, x - m_left_boundary, length, attribute,
-                                   color);
+    m_text_attributes.emplace_back(y, x - m_left_boundary, length, attribute, color);
+  }
+
+  size_t get_line_length_at(size_t index) const {
+    return m_lines.at(index).size();
   }
 };

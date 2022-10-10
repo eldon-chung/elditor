@@ -9,6 +9,7 @@
 #include "Text.h"
 #include "TextTag.h"
 #include "TextWindow.h"
+#include "WindowBorder.h"
 
 // Serves as the driver for the entire view. For now let's keep it at a simple
 //  thing that just holds a text_window, and given the state that needs to be
@@ -16,11 +17,11 @@
 class View {
   Model const *m_model;
   TextWindow m_text_window;
-  std::pair<size_t, size_t> m_text_window_boundary;
+  WindowBorder m_text_window_border;
 
 private:
   View(Model *model, WINDOW *main_window_ptr, int height, int width)
-      : m_model(model), m_text_window(main_window_ptr, height, width), m_text_window_boundary(0, height) {
+      : m_model(model), m_text_window(main_window_ptr, height, width), m_text_window_border(height, width) {
   }
 
 public:
@@ -64,21 +65,84 @@ public:
     Text text = m_model->get_text();
     Cursor cursor = m_model->get_cursor();
 
+    // update the window to "chase the cursor"
+    m_text_window_border.chase_point(cursor.row(), cursor.col());
+
     // now based on these we fetch the required parts of the strings
     std::vector<std::string_view> lines_to_render;
     lines_to_render.reserve(m_text_window.height());
 
-    for (size_t row_idx = m_text_window_boundary.first;
-         row_idx < m_text_window_boundary.second && row_idx < text.num_lines(); row_idx++) {
-      lines_to_render.push_back(text.get_line_at(row_idx));
+    // std::cerr << "text window borders: starting row:[" << m_text_window_border.starting_row() << "]"
+    //           << std::endl;
+    // std::cerr << "text window borders: ending row:[" << m_text_window_border.ending_row() << "]" <<
+    // std::endl; std::cerr << "text window borders: starting col:[" << m_text_window_border.starting_col() <<
+    // "]"
+    //           << std::endl;
+    // std::cerr << "text window borders: ending col:[" << m_text_window_border.ending_col() << "]" <<
+    // std::endl;
+
+    for (size_t row_idx = m_text_window_border.starting_row();
+         row_idx < (size_t)m_text_window_border.ending_row() && row_idx < text.num_lines(); ++row_idx) {
+      if ((size_t)m_text_window_border.starting_col() >= text.get_line_at(row_idx).size()) {
+        // std::cerr << "adding empty line" << std::endl;
+        lines_to_render.emplace_back(std::string_view{""});
+      } else {
+        // std::cerr << "adding line:["
+        //           << text.get_line_at(row_idx).substr(m_text_window_border.starting_col(),
+        //                                               m_text_window_border.width() - 1)
+        //           << "]" << std::endl;
+        lines_to_render.push_back(text.get_line_at(row_idx).substr(m_text_window_border.starting_col(),
+                                                                   m_text_window_border.width() - 1));
+      }
     }
+
     // pad it so that we have the correct amount
     while (lines_to_render.size() < m_text_window.height()) {
+      // std::cerr << "padding empty line" << std::endl;
       lines_to_render.push_back(std::string_view(""));
     }
 
+    // update the contents
     m_text_window.update(std::move(lines_to_render));
-    // m_text_window.add_attribute(cursor.row(), cursor.col(), 1, A_STANDOUT, 0);
-    m_text_window.add_attribute(cursor.row(), cursor.col(), 1, A_STANDOUT, 0);
+
+    // special logic for rendering the cursor
+    render_cursor(cursor);
+  }
+
+  void render_cursor(Cursor cursor) {
+    // special logic for rendering the cursor; we need to deal with the case where we select more rows than
+    // the cursor it needs to chase the active point
+    if (!cursor.in_selection_mode()) {
+      // if it is not in selection mode, just underline it
+      m_text_window.add_attribute(cursor.row() - m_text_window_border.starting_row(),
+                                  cursor.col() - m_text_window_border.starting_col(), 1, A_STANDOUT, 0);
+      return;
+    }
+    std::pair<CursorPoint, CursorPoint> point_pair = cursor.get_points_in_order();
+    CursorPoint left_point = point_pair.first;
+    CursorPoint right_point = point_pair.second;
+    // else we make the relevant portions standout
+    if (left_point.row() == right_point.row()) {
+      assert(left_point.col() < right_point.col());
+      m_text_window.add_attribute(left_point.row() - m_text_window_border.starting_row(), left_point.col(),
+                                  right_point.col() - left_point.col(), A_UNDERLINE, 0);
+
+      return;
+    }
+    // render the first line of the cursor
+    // size_t first_line_length = m_text_window.get_line_length_at(0);
+    //   m_text_window.add_attribute(left_point.row() - m_text_window_border.starting_row(),
+    //                               left_point.col() - m_text_window_border.starting_col(),
+    //                               first_line_length - left_point.col(), A_STANDOUT, 0);
+    //   // render the middle lines of the cursor
+    //   for (size_t line_idx = left_point.row() + 1; line_idx < right_point.row(); ++line_idx) {
+    //     m_text_window.add_attribute(line_idx - m_text_window_border.starting_row(), left_point.col() )
+    //   }
+    //   // render the final lines of the cursor
+
+    //   return;
+    // }
+
+    // assert(left_point.row() < right_point.row());
   }
 };

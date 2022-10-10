@@ -37,18 +37,33 @@ void handle_key(Model &model, Key key) {
   }
 
   if (key.is_type(KeyType::ARROW)) {
-    // std::cerr << "it's an arrow key" << std::endl;
-    if (key.has_keycode(UP)) {
-      model.move_cursor_up();
-    }
-    if (key.has_keycode(DOWN)) {
-      model.move_cursor_down();
-    }
-    if (key.has_keycode(LEFT)) {
-      model.move_cursor_left();
-    }
-    if (key.has_keycode(RIGHT)) {
-      model.move_cursor_right();
+    if (!key.is_modified()) {
+      if (key.has_keycode(UP)) {
+        model.move_cursor_up();
+      }
+      if (key.has_keycode(DOWN)) {
+        model.move_cursor_down();
+      }
+      if (key.has_keycode(LEFT)) {
+        model.move_cursor_left();
+      }
+      if (key.has_keycode(RIGHT)) {
+        model.move_cursor_right();
+      }
+    } else if (key.is_modified_by(KeyModifier::SHIFT)) {
+      std::cerr << "shifted arrow key pressed" << std::endl;
+      if (key.has_keycode(UP)) {
+        model.shift_cursor_up();
+      }
+      if (key.has_keycode(DOWN)) {
+        model.shift_cursor_down();
+      }
+      if (key.has_keycode(LEFT)) {
+        model.shift_cursor_left();
+      }
+      if (key.has_keycode(RIGHT)) {
+        model.shift_cursor_right();
+      }
     }
   }
 }
@@ -60,6 +75,10 @@ int main() {
 
   // main event loop
   while (true) {
+    // get view to update its state
+    view.update_state();
+    view.render();
+
     // make this nonblocking
     int input_char = wgetch(stdscr);
     std::optional<Key> opt_key = keycode_to_key(input_char);
@@ -82,10 +101,6 @@ int main() {
     // the logic here should be to obtain the string in full
     // then tag the string with the correct colours,
     // then update the screen
-
-    // get view to update its state
-    view.update_state();
-    view.render();
   }
 
   endwin(); // here's how you finish up ncurses mode
