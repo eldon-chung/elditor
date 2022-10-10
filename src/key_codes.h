@@ -37,8 +37,8 @@
 // SHIFT
 #define SHIFT_LEFT 393
 #define SHIFT_RIGHT 402
-#define SHIFT_UP 337
-#define SHIFT_DOWN 336
+#define SHIFT_UP 529
+#define SHIFT_DOWN 512
 
 // TAB
 #define SHIFT_TAB 353
@@ -97,10 +97,8 @@ struct Key {
   }
 
   bool is_insertable() const {
-    return !is_modified() &&
-           (std::isalpha(m_keycode) || std::isdigit(m_keycode) ||
-            std::ispunct(m_keycode) || m_keytype == KeyType::SPACE ||
-            m_keytype == KeyType::TAB);
+    return !is_modified() && (std::isalpha(m_keycode) || std::isdigit(m_keycode) || std::ispunct(m_keycode) ||
+                              m_keytype == KeyType::SPACE || m_keytype == KeyType::TAB);
   }
 
   std::string to_string() const {
@@ -171,20 +169,19 @@ const std::unordered_map<int, const Key> reserved_keycode_to_key{
     {CONTROL_DOWN, {CONTROL_DOWN, KeyType::ARROW, KeyModifier::CTRL}},
     {CONTROL_LEFT, {CONTROL_LEFT, KeyType::ARROW, KeyModifier::CTRL}},
     {CONTROL_RIGHT, {CONTROL_RIGHT, KeyType::ARROW, KeyModifier::CTRL}},
-    {SHIFT_CONTROL_UP,
-     {SHIFT_CONTROL_UP, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
-    {SHIFT_CONTROL_DOWN,
-     {SHIFT_CONTROL_DOWN, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
-    {SHIFT_CONTROL_LEFT,
-     {SHIFT_CONTROL_LEFT, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
-    {SHIFT_CONTROL_RIGHT,
-     {SHIFT_CONTROL_RIGHT, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
+    {SHIFT_UP, {SHIFT_UP, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
+    {SHIFT_DOWN, {SHIFT_DOWN, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
+    {SHIFT_LEFT, {SHIFT_LEFT, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
+    {SHIFT_RIGHT, {SHIFT_RIGHT, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
+    {SHIFT_CONTROL_UP, {SHIFT_CONTROL_UP, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
+    {SHIFT_CONTROL_DOWN, {SHIFT_CONTROL_DOWN, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
+    {SHIFT_CONTROL_LEFT, {SHIFT_CONTROL_LEFT, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
+    {SHIFT_CONTROL_RIGHT, {SHIFT_CONTROL_RIGHT, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
     {ALT_UP, {ALT_UP, KeyType::ARROW, KeyModifier::ALT}},
     {ALT_DOWN, {ALT_DOWN, KeyType::ARROW, KeyModifier::ALT}},
     // backspace, and their modifiers
     {BACKSPACE_CODE, {BACKSPACE_CODE, KeyType::BACKSPACE, KeyModifier::NONE}},
-    {CONTROL_BACKSPACE,
-     {CONTROL_BACKSPACE, KeyType::BACKSPACE, KeyModifier::CTRL}},
+    {CONTROL_BACKSPACE, {CONTROL_BACKSPACE, KeyType::BACKSPACE, KeyModifier::CTRL}},
     // tab, and their modifiers
     {TAB_CODE, {TAB_CODE, KeyType::TAB, KeyModifier::NONE}},
     {SHIFT_TAB, {SHIFT_TAB, KeyType::TAB, KeyModifier::SHIFT}},
