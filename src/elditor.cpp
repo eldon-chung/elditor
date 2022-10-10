@@ -19,14 +19,15 @@ void initialise() {
 }
 
 void handle_key(Model &model, Key key) {
+  // std::cerr << "key_struct:" << key.to_string() << std::endl;
   if (key.is_insertable()) {
     model.insert_string(std::string(1, key.get_char()));
     return;
   }
 
-  if (key.is_modified()) {
-    return;
-  }
+  // if (key.is_modified()) {
+  //   return;
+  // }
 
   if (key.is_type(KeyType::ENTER) && !key.is_modified()) {
     model.insert_string(std::string("\n"));
@@ -37,6 +38,7 @@ void handle_key(Model &model, Key key) {
   }
 
   if (key.is_type(KeyType::ARROW)) {
+    // std::cerr << "key modifier:[" << key.modifier() << "]" << std::endl;
     if (!key.is_modified()) {
       if (key.has_keycode(UP)) {
         model.move_cursor_up();
@@ -52,16 +54,16 @@ void handle_key(Model &model, Key key) {
       }
     } else if (key.is_modified_by(KeyModifier::SHIFT)) {
       std::cerr << "shifted arrow key pressed" << std::endl;
-      if (key.has_keycode(UP)) {
+      if (key.has_keycode(SHIFT_UP)) {
         model.shift_cursor_up();
       }
-      if (key.has_keycode(DOWN)) {
+      if (key.has_keycode(SHIFT_DOWN)) {
         model.shift_cursor_down();
       }
-      if (key.has_keycode(LEFT)) {
+      if (key.has_keycode(SHIFT_LEFT)) {
         model.shift_cursor_left();
       }
-      if (key.has_keycode(RIGHT)) {
+      if (key.has_keycode(SHIFT_RIGHT)) {
         model.shift_cursor_right();
       }
     }

@@ -106,6 +106,7 @@ public:
     m_text_window.update(std::move(lines_to_render));
 
     // special logic for rendering the cursor
+    std::cerr << "rendering cursor in mode:[" << cursor.in_selection_mode() << std::endl;
     render_cursor(cursor);
   }
 
@@ -118,6 +119,7 @@ public:
                                   cursor.col() - m_text_window_border.starting_col(), 1, A_STANDOUT, 0);
       return;
     }
+    std::cerr << "rendering non selection cursor " << std::endl;
     std::pair<CursorPoint, CursorPoint> point_pair = cursor.get_points_in_order();
     CursorPoint left_point = point_pair.first;
     CursorPoint right_point = point_pair.second;

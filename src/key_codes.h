@@ -38,7 +38,7 @@
 #define SHIFT_LEFT 393
 #define SHIFT_RIGHT 402
 #define SHIFT_UP 529
-#define SHIFT_DOWN 512
+#define SHIFT_DOWN 513
 
 // TAB
 #define SHIFT_TAB 353
@@ -169,10 +169,10 @@ const std::unordered_map<int, const Key> reserved_keycode_to_key{
     {CONTROL_DOWN, {CONTROL_DOWN, KeyType::ARROW, KeyModifier::CTRL}},
     {CONTROL_LEFT, {CONTROL_LEFT, KeyType::ARROW, KeyModifier::CTRL}},
     {CONTROL_RIGHT, {CONTROL_RIGHT, KeyType::ARROW, KeyModifier::CTRL}},
-    {SHIFT_UP, {SHIFT_UP, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
-    {SHIFT_DOWN, {SHIFT_DOWN, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
-    {SHIFT_LEFT, {SHIFT_LEFT, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
-    {SHIFT_RIGHT, {SHIFT_RIGHT, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
+    {SHIFT_UP, {SHIFT_UP, KeyType::ARROW, KeyModifier::SHIFT}},
+    {SHIFT_DOWN, {SHIFT_DOWN, KeyType::ARROW, KeyModifier::SHIFT}},
+    {SHIFT_LEFT, {SHIFT_LEFT, KeyType::ARROW, KeyModifier::SHIFT}},
+    {SHIFT_RIGHT, {SHIFT_RIGHT, KeyType::ARROW, KeyModifier::SHIFT}},
     {SHIFT_CONTROL_UP, {SHIFT_CONTROL_UP, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
     {SHIFT_CONTROL_DOWN, {SHIFT_CONTROL_DOWN, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},
     {SHIFT_CONTROL_LEFT, {SHIFT_CONTROL_LEFT, KeyType::ARROW, KeyModifier::CTRL_SHIFT}},

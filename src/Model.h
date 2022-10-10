@@ -64,10 +64,16 @@ public:
 
   void shift_cursor_left() {
     m_text_buffer.move_cursor_left(m_cursor.active_point());
+    std::cerr << "shifting cursor left." << std::endl;
+    std::cerr << "shifting cursor active col:" << m_cursor.active_point().col() << std::endl;
+    std::cerr << "shifting cursor trailing col:" << m_cursor.trailing_point().col() << std::endl;
   }
 
   void shift_cursor_right() {
     m_text_buffer.move_cursor_right(m_cursor.active_point());
+    std::cerr << "shifting cursor right." << std::endl;
+    std::cerr << "shifting cursor active col:" << m_cursor.active_point().col() << std::endl;
+    std::cerr << "shifting cursor trailing col:" << m_cursor.trailing_point().col() << std::endl;
   }
 
   // const view api
