@@ -60,7 +60,6 @@ struct TextWindow {
         // else there get a view of the current string, starting from start_col
         const char *start_ptr = m_lines.at(row_idx).data() + m_left_boundary;
         std::string_view rendered_line{start_ptr, m_num_cols};
-        // std::cerr << "TextWindow: Rendering " << rendered_line << std::endl;
         mvwaddstr(m_window_ptr, row_idx, 0, rendered_line.data());
       }
     }
@@ -71,9 +70,6 @@ struct TextWindow {
       mvwchgat(m_window_ptr, text_attribute.y(), text_attribute.x(), text_attribute.n(),
                text_attribute.attribute(), text_attribute.colour(), NULL);
     }
-
-    // mvwchgat(m_window_ptr, 0, 0, 1, A_STANDOUT, 0, NULL);
-    // waddch('c');
 
     wrefresh(m_window_ptr);
   }

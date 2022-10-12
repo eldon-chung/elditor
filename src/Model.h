@@ -23,6 +23,9 @@ public:
   }
 
   void insert_string(std::string &&to_insert) {
+    if (m_cursor.in_selection_mode()) {
+      m_text_buffer.remove_string_at(m_cursor);
+    }
     m_text_buffer.insert_string_at(std::move(to_insert), m_cursor);
   }
 
