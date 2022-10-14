@@ -275,16 +275,24 @@ public:
   Text get_text() const {
     std::string view_string{""};
     std::vector<size_t> line_lengths;
-    line_lengths.reserve(m_text_buffer.size());
+    std::vector<size_t> line_pos;
 
+    line_lengths.reserve(m_text_buffer.size());
+    line_pos.reserve(m_text_buffer.size());
+
+    line_pos.push_back(0);
     for (size_t idx = 0; idx < m_text_buffer.size(); idx++) {
       view_string += m_text_buffer.at(idx);
       view_string += "\n";
       line_lengths.push_back(m_text_buffer.at(idx).size());
+      line_pos.push_back(view_string.size());
     }
     // remove the last "\n"
     view_string.pop_back();
-    return Text{std::move(view_string), std::move(line_lengths)};
+    // remove the last line length
+    line_pos.pop_back();
+
+    return Text{std::move(view_string), std::move(line_lengths), std::move(line_pos)};
   }
 
 private:
