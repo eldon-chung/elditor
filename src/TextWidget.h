@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cassert>
 #include <deque>
 #include <ncurses.h>
@@ -9,6 +10,7 @@
 #include "Model.h"
 #include "Text.h"
 #include "TextAttribute.h"
+#include "ViewModel.h"
 #include "WindowBorder.h"
 
 struct TextWindow {
@@ -39,11 +41,9 @@ struct TextWindow {
     m_text_attributes.clear();
     m_lines.clear();
     for (std::string_view &s : new_contents) {
-      // std::cerr << "TextWindow: Updating line \"" << s << "\"" << std::endl;
       m_lines.push_back(std::string(s));
     }
     new_contents.clear();
-    // subsequently add in the attributes as well
   }
 
   void set_left_boundary(size_t left_boundary) {
@@ -57,7 +57,6 @@ struct TextWindow {
     for (size_t row_idx = 0; row_idx < m_num_rows; row_idx++) {
       if (m_left_boundary >= m_lines.at(row_idx).size()) {
         // if the starting column is too far right then we dont have to bother
-        // std::cerr << "TextWindow: Rendering empty line" << std::endl;
         mvwaddstr(m_window_ptr, row_idx, 0, "");
       } else {
         // else there get a view of the current string, starting from start_col
@@ -117,7 +116,7 @@ public:
 
   void update_state() {
     // get the cursor
-    Cursor cursor = m_model->get_cursor();
+    Cursor cursor = m_view_model->get_cursor();
 
     // update the window to "chase the cursor"
     m_text_window_border.chase_point(cursor.row(), cursor.col());
@@ -126,11 +125,11 @@ public:
     std::vector<TaggedText> lines_in_window;
     lines_in_window.reserve(m_text_window_border.height());
     for (size_t row_idx = m_text_window_border.starting_row();
-         row_idx < (size_t)m_text_window_border.ending_row() && row_idx < text.num_lines(); ++row_idx) {
-      lines_in_window.push_back(m_model_view.get_line_at(row_idx));
+         row_idx < (size_t)m_text_window_border.ending_row() && row_idx < lines_in_window.size(); ++row_idx) {
+      lines_in_window.push_back(m_view_model->get_const_tagged_line_at(row_idx));
     }
     // pad it so that we have the correct amount
-    while (lines_to_render.size() < m_text_window.height()) {
+    while (lines_in_window.size() < m_text_window.height()) {
       // std::cerr << "padding empty line" << std::endl;
       lines_in_window.push_back(TaggedText{});
     }
@@ -138,44 +137,6 @@ public:
     // cut out the text based on the box
 
     // move the altered text into the text window
-    m_text_window.update(std::move(lines_to_render));
-  }
-
-  void render_cursor(Cursor cursor) {
-    // special logic for rendering the cursor; we need to deal with the case where we select more rows than
-    // the cursor it needs to chase the active point
-    if (!cursor.in_selection_mode()) {
-      // if it is not in selection mode, just underline it
-      m_text_window.add_attribute(cursor.row() - m_text_window_border.starting_row(),
-                                  cursor.col() - m_text_window_border.starting_col(), 1, A_STANDOUT, 0);
-      return;
-    }
-    std::cerr << "rendering non selection cursor " << std::endl;
-    std::pair<CursorPoint, CursorPoint> point_pair = cursor.get_points_in_order();
-    CursorPoint left_point = point_pair.first;
-    CursorPoint right_point = point_pair.second;
-    // else we make the relevant portions standout
-    if (left_point.row() == right_point.row()) {
-      assert(left_point.col() < right_point.col());
-      m_text_window.add_attribute(left_point.row() - m_text_window_border.starting_row(), left_point.col(),
-                                  right_point.col() - left_point.col(), A_UNDERLINE, 0);
-
-      return;
-    }
-    // render the first line of the cursor
-    // size_t first_line_length = m_text_window.get_line_length_at(0);
-    //   m_text_window.add_attribute(left_point.row() - m_text_window_border.starting_row(),
-    //                               left_point.col() - m_text_window_border.starting_col(),
-    //                               first_line_length - left_point.col(), A_STANDOUT, 0);
-    //   // render the middle lines of the cursor
-    //   for (size_t line_idx = left_point.row() + 1; line_idx < right_point.row(); ++line_idx) {
-    //     m_text_window.add_attribute(line_idx - m_text_window_border.starting_row(), left_point.col() )
-    //   }
-    //   // render the final lines of the cursor
-
-    //   return;
-    // }
-
-    // assert(left_point.row() < right_point.row());
+    // m_text_window.update(std::move(lines_in_window));
   }
 };

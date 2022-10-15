@@ -14,12 +14,12 @@
 //  thing that just holds a text_window, and given the state that needs to be
 //  rendered drives the entire rendering logic
 class View {
-  ViewModel const *m_view_model;
+  // ViewModel const *m_view_model;
   TextWidget m_text_widget;
 
 private:
   View(ViewModel const *view_model, WINDOW *main_window_ptr, int height, int width)
-      : m_view_model(view_model), m_text_widget(view_model, main_window_ptr, height, width) {
+      : m_text_widget(view_model, main_window_ptr, height, width) {
   }
 
 public:
@@ -32,11 +32,11 @@ public:
   }
 
   static void init_view_colours() {
-    init_pair(COLOUR::NORMAL, COLOR_WHITE, -1);
-    init_pair(COLOUR::CURSOR, COLOR_BLACK, COLOR_WHITE);
+    init_pair((short)COLOUR::NORMAL, COLOR_WHITE, -1);
+    init_pair((short)COLOUR::CURSOR, COLOR_BLACK, COLOR_WHITE);
   }
 
-  static View initialize(Model *model) {
+  static View initialize(ViewModel *model) {
     initscr();
     start_color();
     use_default_colors();

@@ -3,7 +3,6 @@
 
 #include "Model.h"
 #include "TextBuffer.h"
-#include "TextWindow.h"
 #include "View.h"
 #include "key_codes.h"
 
@@ -73,7 +72,8 @@ void handle_key(Model &model, Key key) {
 int main() {
   // construct model and give view a "handle" to model
   Model model = Model::initialize();
-  View view = View::initialize(&model);
+  ViewModel view_model = ViewModel(&model);
+  View view = View::initialize(&view_model);
 
   // main event loop
   while (true) {

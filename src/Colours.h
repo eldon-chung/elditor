@@ -2,12 +2,12 @@
 
 #include <ncurses.h>
 
-enum COLOUR {
+enum class COLOUR {
   NORMAL,
   CURSOR,
 };
 
-enum ATTRIBUTE {
+enum class ATTRIBUTE {
   NORMAL = A_NORMAL,
   HIGHLIGHT = A_STANDOUT,
   UNDERLINE = A_UNDERLINE,

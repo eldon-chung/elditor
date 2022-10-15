@@ -26,7 +26,7 @@ public:
     return m_model->get_cursor();
   }
 
-  std::vector<TaggedText> const &get_tagged_text() const {
+  std::vector<TaggedText> const &get_const_tagged_text() const {
     return m_tagged_text;
   }
 
@@ -34,11 +34,11 @@ public:
     return m_tagged_text;
   }
 
-  TaggedText const &get_line_at(size_t index) const {
+  TaggedText const &get_const_tagged_line_at(size_t index) const {
     return m_tagged_text.at(index);
   }
 
-  TaggedText get_line_at(size_t index) const {
+  TaggedText get_tagged_line_at(size_t index) const {
     return m_tagged_text.at(index);
   }
 
@@ -79,17 +79,14 @@ private:
         assert(left_point.row() < right_point.row());
         size_t end_pos = m_tagged_text.at(left_point.row()).size();
         // tag for the first row
-        TextTag text_tag{left_point.row(), end_pos, COLOUR::NORMAL, ATTRIBUTE::UNDERLINE};
-        m_tagged_text.at(left_point.row()).add_tag(std::move(text_tag));
+        m_tagged_text.at(left_point.row()).add_tag({left_point.row(), end_pos, COLOUR::NORMAL, ATTRIBUTE::UNDERLINE});
         // tag for the middle rows
         for (size_t idx = left_point.row() + 1; idx < right_point.row(); ++idx) {
           end_pos = m_tagged_text.at(idx).size();
-          TextTag text_tag{0, end_pos, COLOUR::NORMAL, ATTRIBUTE::UNDERLINE};
-          m_tagged_text.at(idx).add_tag(std::move(text_tag));
+          m_tagged_text.at(idx).add_tag({0, end_pos, COLOUR::NORMAL, ATTRIBUTE::UNDERLINE});
         }
         // tag for the final row
-        TextTag text_tag{0, right_point.col(), COLOUR::NORMAL, ATTRIBUTE::UNDERLINE};
-        m_tagged_text.at(right_point.row()).add_tag(std::move(text_tag));
+        m_tagged_text.at(right_point.row()).add_tag({0, right_point.col(), COLOUR::NORMAL, ATTRIBUTE::UNDERLINE});
       }
     } else {
       assert(!cursor.in_selection_mode());
