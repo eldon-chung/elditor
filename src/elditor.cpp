@@ -3,7 +3,6 @@
 
 #include "Model.h"
 #include "TextBuffer.h"
-#include "TextWindow.h"
 #include "View.h"
 #include "key_codes.h"
 
