@@ -64,7 +64,6 @@ struct Text {
 
 class TaggedText {
     std::string m_text;
-    std::string_view m_resulting_text;
     std::vector<TextTag> m_tags;
 
   public:
@@ -72,18 +71,26 @@ class TaggedText {
     }
 
     TaggedText(std::string text, std::vector<TextTag> tags)
-        : m_text(std::move(text)), m_resulting_text(m_text), m_tags(std::move(tags)) {
+        : m_text(std::move(text)), m_tags(std::move(tags)) {
     }
 
     // you should be using this to get the resulting text
-    std::string_view &get_text() {
-        return m_resulting_text;
+    std::string_view get_text() {
+        return std::string_view{m_text};
     }
 
     void resize(size_t size) {
-        m_text = std::string_view(m_resulting_text);
         m_text.resize(size);
-        m_resulting_text = std::string_view(m_text);
+    }
+
+    void remove_prefix(size_t size) {
+        if (size >= m_text.size()) {
+            m_text.clear();
+        } else {
+            std::string_view temp_view{m_text};
+            temp_view.remove_prefix(size);
+            m_text = std::string{temp_view};
+        }
     }
 
     TextTag &get_tag(size_t index) {
@@ -108,5 +115,10 @@ class TaggedText {
 
     size_t size() const {
         return m_text.size();
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, TaggedText const &text) {
+        os << text.m_text;
+        return os;
     }
 };

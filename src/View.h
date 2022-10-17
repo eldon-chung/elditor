@@ -14,51 +14,50 @@
 //  thing that just holds a text_window, and given the state that needs to be
 //  rendered drives the entire rendering logic
 class View {
-  // ViewModel const *m_view_model;
-  TextWidget m_text_widget;
+    // ViewModel const *m_view_model;
+    TextWidget m_text_widget;
 
-private:
-  View(ViewModel const *view_model, WINDOW *main_window_ptr, int height, int width)
-      : m_text_widget(view_model, main_window_ptr, height, width) {
-  }
+  private:
+    View(ViewModel const *view_model, WINDOW *main_window_ptr, int height, int width)
+        : m_text_widget(view_model, main_window_ptr, height, width) {
+    }
 
-public:
-  // important shit
-  View(View const &) = delete;
-  View &operator=(View const &) = delete;
-  View(View &&) = delete;
-  View &operator=(View &&) = delete;
-  ~View() {
-  }
+  public:
+    // important shit
+    View(View const &) = delete;
+    View &operator=(View const &) = delete;
+    View(View &&) = delete;
+    View &operator=(View &&) = delete;
+    ~View() {
+    }
 
-  static void init_view_colours() {
-    init_pair((short)COLOUR::NORMAL, COLOR_WHITE, -1);
-    init_pair((short)COLOUR::CURSOR, COLOR_BLACK, COLOR_WHITE);
-  }
+    static void init_view_colours() {
+        init_pair((short)COLOUR::NORMAL, COLOR_WHITE, -1);
+        init_pair((short)COLOUR::CURSOR, COLOR_BLACK, COLOR_WHITE);
+    }
 
-  static View initialize(ViewModel *model) {
-    initscr();
-    start_color();
-    use_default_colors();
-    noecho();
-    raw();
-    curs_set(0);
-    keypad(stdscr, TRUE);
+    static View initialize(ViewModel *model) {
+        initscr();
+        start_color();
+        use_default_colors();
+        noecho();
+        raw();
+        curs_set(0);
+        keypad(stdscr, TRUE);
 
-    // Get the screen height and width
-    int height, width;
-    getmaxyx(stdscr, height, width);
-    std::cerr << "View: initialised with height and width " << height << " " << width << std::endl;
-    // Construct the view with the main screen, and passing in height and width
-    return View(model, stdscr, height, width);
-  }
+        // Get the screen height and width
+        int height, width;
+        getmaxyx(stdscr, height, width);
+        // Construct the view with the main screen, and passing in height and width
+        return View(model, stdscr, height, width);
+    }
 
-  // Calls render on the relevant view elements
-  void render() {
-    m_text_widget.render();
-  }
+    // Calls render on the relevant view elements
+    void render() {
+        m_text_widget.render();
+    }
 
-  void update_state() {
-    m_text_widget.update_state();
-  }
+    void update_state() {
+        m_text_widget.update_state();
+    }
 };

@@ -18,7 +18,6 @@ void initialise() {
 }
 
 void handle_key(Model &model, Key key) {
-    // std::cerr << "key_struct:" << key.to_string() << std::endl;
     if (key.is_insertable()) {
         model.insert_string(std::string(1, key.get_char()));
         return;
@@ -52,7 +51,6 @@ void handle_key(Model &model, Key key) {
                 model.move_cursor_right();
             }
         } else if (key.is_modified_by(KeyModifier::SHIFT)) {
-            std::cerr << "shifted arrow key pressed" << std::endl;
             if (key.has_keycode(SHIFT_UP)) {
                 model.shift_cursor_up();
             }

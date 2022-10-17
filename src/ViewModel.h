@@ -42,6 +42,10 @@ class ViewModel {
         return m_tagged_text.at(index);
     }
 
+    size_t num_lines() const {
+        return m_tagged_text.size();
+    }
+
   private:
     // Gets text from the model and prepares it with tags etc
     void update_tagged_text() {
@@ -52,6 +56,7 @@ class ViewModel {
         m_tagged_text.clear();
         m_tagged_text.reserve(text.num_lines());
         for (size_t line_idx = 0; line_idx < text.num_lines(); ++line_idx) {
+            // std::cerr << "viewmodel: pushing back [" << text.get_line_at(line_idx) << "]" << std::endl;
             m_tagged_text.push_back(std::string{text.get_line_at(line_idx)});
         }
 
@@ -81,7 +86,7 @@ class ViewModel {
                 size_t end_pos = m_tagged_text.at(left_point.row()).size();
                 // tag for the first row
                 m_tagged_text.at(left_point.row())
-                    .add_tag({left_point.row(), end_pos, COLOUR::NORMAL, ATTRIBUTE::UNDERLINE});
+                    .add_tag({left_point.col(), end_pos, COLOUR::NORMAL, ATTRIBUTE::UNDERLINE});
                 // tag for the middle rows
                 for (size_t idx = left_point.row() + 1; idx < right_point.row(); ++idx) {
                     end_pos = m_tagged_text.at(idx).size();
@@ -93,7 +98,7 @@ class ViewModel {
             }
         } else {
             assert(!cursor.in_selection_mode());
-            TextTag text_tag(cursor.col(), cursor.col() + 1, COLOUR::NORMAL, ATTRIBUTE::UNDERLINE);
+            TextTag text_tag(cursor.col(), cursor.col() + 1, COLOUR::NORMAL, ATTRIBUTE::HIGHLIGHT);
             m_tagged_text.at(cursor.row()).add_tag(std::move(text_tag));
         }
     }

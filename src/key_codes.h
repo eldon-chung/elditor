@@ -37,8 +37,8 @@
 // SHIFT
 #define SHIFT_LEFT 393
 #define SHIFT_RIGHT 402
-#define SHIFT_UP 529
-#define SHIFT_DOWN 513
+#define SHIFT_UP 337
+#define SHIFT_DOWN 336
 
 // TAB
 #define SHIFT_TAB 353
@@ -54,86 +54,87 @@
 #define CONTROL_Q 17
 
 enum KeyType {
-  ALPHA,
-  DIGIT,
-  PUNCTUATION,
-  ARROW,
-  DELETE,
-  BACKSPACE,
-  TAB,
-  SPACE,
-  ENTER,
-  ESCAPE,
+    ALPHA,
+    DIGIT,
+    PUNCTUATION,
+    ARROW,
+    DELETE,
+    BACKSPACE,
+    TAB,
+    SPACE,
+    ENTER,
+    ESCAPE,
 };
 
 // Not sure if i should just enum all combinations I want to handle
 // which arent that many
 enum KeyModifier {
-  NONE,
-  CTRL,
-  ALT,
-  SHIFT,
-  CTRL_SHIFT
+    NONE,
+    CTRL,
+    ALT,
+    SHIFT,
+    CTRL_SHIFT
 };
 
 // digits, alphas, and punctuations are writable
 // everything else should be intercepted
 // what keyname do we give?
 struct Key {
-  int m_keycode;
-  KeyType m_keytype;
-  KeyModifier m_modifier;
+    int m_keycode;
+    KeyType m_keytype;
+    KeyModifier m_modifier;
 
-  Key(int keycode, KeyType keytype, KeyModifier modifier)
-      : m_keycode(keycode), m_keytype(keytype), m_modifier(modifier) {
-  }
+    Key(int keycode, KeyType keytype, KeyModifier modifier)
+        : m_keycode(keycode), m_keytype(keytype), m_modifier(modifier) {
+    }
 
-  bool is_modified() const {
-    return !is_modified_by(KeyModifier::NONE);
-  }
+    bool is_modified() const {
+        return !is_modified_by(KeyModifier::NONE);
+    }
 
-  bool is_modified_by(const KeyModifier modifier) const {
-    return m_modifier == modifier;
-  }
+    bool is_modified_by(const KeyModifier modifier) const {
+        return m_modifier == modifier;
+    }
 
-  bool is_insertable() const {
-    return !is_modified() && (std::isalpha(m_keycode) || std::isdigit(m_keycode) || std::ispunct(m_keycode) ||
-                              m_keytype == KeyType::SPACE || m_keytype == KeyType::TAB);
-  }
+    bool is_insertable() const {
+        return !is_modified() &&
+               (std::isalpha(m_keycode) || std::isdigit(m_keycode) || std::ispunct(m_keycode) ||
+                m_keytype == KeyType::SPACE || m_keytype == KeyType::TAB);
+    }
 
-  std::string to_string() const {
-    std::string output_string{""};
-    output_string.append("keycode: ");
-    output_string.append(std::to_string(m_keycode));
-    output_string.append(" keytype: ");
-    output_string.append(std::to_string(m_keytype));
-    output_string.append(" modifier: ");
-    output_string.append(std::to_string(m_modifier));
-    return output_string;
-  }
+    std::string to_string() const {
+        std::string output_string{""};
+        output_string.append("keycode: ");
+        output_string.append(std::to_string(m_keycode));
+        output_string.append(" keytype: ");
+        output_string.append(std::to_string(m_keytype));
+        output_string.append(" modifier: ");
+        output_string.append(std::to_string(m_modifier));
+        return output_string;
+    }
 
-  bool has_keycode(int keycode) const {
-    return m_keycode == keycode;
-  }
+    bool has_keycode(int keycode) const {
+        return m_keycode == keycode;
+    }
 
-  bool is_type(KeyType key_type) const {
-    return m_keytype == key_type;
-  }
+    bool is_type(KeyType key_type) const {
+        return m_keytype == key_type;
+    }
 
-  KeyType type() const {
-    return m_keytype;
-  }
+    KeyType type() const {
+        return m_keytype;
+    }
 
-  KeyModifier modifier() const {
-    return m_modifier;
-  }
+    KeyModifier modifier() const {
+        return m_modifier;
+    }
 
-  // should only call this when it is an insertable type
-  char get_char() const {
-    return (char)m_keycode;
-  }
+    // should only call this when it is an insertable type
+    char get_char() const {
+        return (char)m_keycode;
+    }
 
-  // friend std::ostream &operator<<(std::ostream &os, const Key &key);
+    // friend std::ostream &operator<<(std::ostream &os, const Key &key);
 };
 
 // std::ostream &operator<<(std::ostream &os, const Key &key) {
