@@ -63,7 +63,6 @@ class TextBuffer {
             cursor_point.row()--;
             cursor_point.col() = m_text_buffer.at(cursor_point.row()).size();
         }
-
         cursor_point.original_col() = cursor_point.col();
         assert(within_bounds(cursor_point));
     }
