@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <iostream>
 #include <ncurses.h>
 #include <string>
 #include <string_view>
@@ -85,10 +86,10 @@ class TaggedText {
 
     void remove_prefix(size_t size) {
         if (size >= m_text.size()) {
+            std::string_view temp_view{m_text.begin() + size, m_text.end()};
             m_text.clear();
         } else {
-            std::string_view temp_view{m_text};
-            temp_view.remove_prefix(size);
+            std::string_view temp_view{m_text.begin() + size, m_text.end()};
             m_text = std::string{temp_view};
         }
     }

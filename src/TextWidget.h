@@ -59,13 +59,6 @@ struct TextWindow {
         wstandend(m_window_ptr);
         for (size_t row_idx = 0; row_idx < m_num_rows; row_idx++) {
             for (TextTag const &tag : m_lines.at(row_idx).get_tags()) {
-                std::cerr << "applying tag:[";
-                std::cerr << "tag.m_start_pos >> " << tag.m_start_pos << ";";
-                std::cerr << "tag.m_end_pos >> " << tag.m_end_pos << ";";
-                std::cerr << "tag.length() >> " << tag.length() << ";";
-                std::cerr << "tag.m_attribute >> " << (attr_t)tag.m_attribute << ";";
-                std::cerr << "tag.m_colour >> " << (short)tag.m_colour << ";";
-                std::cerr << "]" << std::endl;
                 mvwchgat(m_window_ptr, row_idx, tag.m_start_pos, tag.length(), (attr_t)tag.m_attribute,
                          (short)tag.m_colour, NULL);
             }
@@ -107,13 +100,11 @@ class TextWidget {
     }
 
     void update_state() {
+
         // get the cursor
         Cursor cursor = m_view_model->get_cursor();
 
         // update the window to "chase the cursor"
-        // std::cerr << "window starting row and col  [" << m_text_window_border.starting_row() << ","
-        //           << m_text_window_border.starting_col() << "]" << std::endl;
-
         m_text_window_border.chase_point(cursor.row(), cursor.col());
 
         // get the relevant strings within the rows of the current border
@@ -122,13 +113,10 @@ class TextWidget {
         for (size_t row_idx = m_text_window_border.starting_row();
              row_idx < (size_t)m_text_window_border.ending_row() && row_idx < m_view_model->num_lines();
              ++row_idx) {
-            // std::cerr << "pushing back (precut) at row " << row_idx << "["
-            //           << m_view_model->get_tagged_line_at(row_idx) << "]" << std::endl;
             lines_in_window.push_back(m_view_model->get_tagged_line_at(row_idx));
         }
         // pad it so that we have the correct amount
         while (lines_in_window.size() < m_text_window.height()) {
-            // std::cerr << "pushing back empty string" << std::endl;
             lines_in_window.push_back(TaggedText{});
         }
 
@@ -137,28 +125,21 @@ class TextWidget {
             // cut the line off the text if needed; implemented in an absolutely disgusting way
             std::string_view line_view = line_to_cut.get_text();
             if (line_view.size() >= (size_t)window_border.starting_row()) {
-                line_to_cut.remove_prefix(window_border.starting_row());
+                line_to_cut.remove_prefix(window_border.starting_col());
                 line_to_cut.resize(window_border.width());
             } else {
                 line_view = "";
             }
-
-            // std::cerr << "cutting a new string [" << line_to_cut.get_text() << "]" << std::endl;
 
             // now we need to cut the tags too
             for (TextTag &tag : line_to_cut.get_tags()) {
                 if (tag.m_start_pos > (size_t)window_border.ending_col() ||
                     tag.m_end_pos < (size_t)window_border.starting_col()) {
                     // if the tag is either too far left or too far right; just 'delete' it
-                    std::cerr << "tag is too far left or too far right" << std::endl;
                     tag.m_end_pos = tag.m_start_pos;
                 } else {
                     assert(tag.m_start_pos <= (size_t)window_border.ending_col() &&
                            tag.m_end_pos >= (size_t)window_border.starting_col());
-                    std::cerr << "shrinking tag:[";
-                    std::cerr << "m_start_pos:" << tag.m_start_pos << ";";
-                    std::cerr << "m_end_pos:" << tag.m_end_pos << ";";
-                    std::cerr << "]" << std::endl;
 
                     // shrink them down so that they're within the range of the cut if necessary
                     tag.m_start_pos = std::max(tag.m_start_pos, (size_t)window_border.starting_col());
@@ -167,11 +148,6 @@ class TextWidget {
                     // shift them left
                     tag.m_start_pos -= window_border.starting_col();
                     tag.m_end_pos -= window_border.starting_col();
-
-                    std::cerr << "resulting tag:[";
-                    std::cerr << "m_start_pos:" << tag.m_start_pos;
-                    std::cerr << "m_end_pos:" << tag.m_end_pos;
-                    std::cerr << "]" << std::endl;
                 }
             }
         };
