@@ -56,7 +56,6 @@ class ViewModel {
         m_tagged_text.clear();
         m_tagged_text.reserve(text.num_lines());
         for (size_t line_idx = 0; line_idx < text.num_lines(); ++line_idx) {
-            // std::cerr << "viewmodel: pushing back [" << text.get_line_at(line_idx) << "]" << std::endl;
             m_tagged_text.push_back(std::string{text.get_line_at(line_idx)});
         }
 
