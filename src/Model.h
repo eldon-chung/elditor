@@ -4,87 +4,97 @@
 
 // Conceptually stores the state of the program
 class Model {
-  TextBuffer m_text_buffer;
-  Cursor m_cursor;
+    TextBuffer m_text_buffer;
+    Cursor m_cursor;
 
-  Model() : m_cursor{0, 0, 0} {
-  }
-
-public:
-  Model(Model const &) = delete;
-  Model &operator=(Model const &) = delete;
-  Model(Model &&) = delete;
-  Model &operator=(Model &&) = delete;
-  ~Model() {
-  }
-
-  static Model initialize() {
-    return Model();
-  }
-
-  void insert_string(std::string &&to_insert) {
-    if (m_cursor.in_selection_mode()) {
-      m_text_buffer.remove_string_at(m_cursor);
+    Model() : m_cursor{0, 0, 0} {
     }
-    m_text_buffer.insert_string_at(std::move(to_insert), m_cursor);
-  }
 
-  void remove_char() {
-    m_text_buffer.remove_string_at(m_cursor);
-  }
+  public:
+    Model(Model const &) = delete;
+    Model &operator=(Model const &) = delete;
+    Model(Model &&) = delete;
+    Model &operator=(Model &&) = delete;
+    ~Model() {
+    }
 
-  // Base cursor movement
+    static Model initialize() {
+        return Model();
+    }
 
-  void move_cursor_up() {
-    m_text_buffer.move_cursor_up(m_cursor.active_point());
-    m_cursor.reset_trailing_point();
-  }
+    void insert_string(std::string &&to_insert) {
+        if (m_cursor.in_selection_mode()) {
+            m_text_buffer.remove_string_at(m_cursor);
+        }
+        m_text_buffer.insert_string_at(std::move(to_insert), m_cursor);
+    }
 
-  void move_cursor_down() {
-    m_text_buffer.move_cursor_down(m_cursor.active_point());
-    m_cursor.reset_trailing_point();
-  }
+    void remove_char() {
+        m_text_buffer.remove_string_at(m_cursor);
+    }
 
-  void move_cursor_left() {
-    m_text_buffer.move_cursor_left(m_cursor.active_point());
-    m_cursor.reset_trailing_point();
-  }
+    // Base cursor movement
 
-  void move_cursor_right() {
-    m_text_buffer.move_cursor_right(m_cursor.active_point());
-    m_cursor.reset_trailing_point();
-  }
+    void move_cursor_up() {
+        m_text_buffer.move_cursor_up(m_cursor.active_point());
+        m_cursor.reset_trailing_point();
+    }
 
-  // Shift cursor movement
+    void move_cursor_down() {
+        m_text_buffer.move_cursor_down(m_cursor.active_point());
+        m_cursor.reset_trailing_point();
+    }
 
-  void shift_cursor_up() {
-    m_text_buffer.move_cursor_up(m_cursor.active_point());
-  }
+    void move_cursor_left() {
+        if (m_cursor.in_selection_mode()) {
+            CursorPoint left_point = m_cursor.get_left_point();
+            m_cursor.reset_to_point(left_point);
+        } else {
+            m_text_buffer.move_cursor_left(m_cursor.active_point());
+            m_cursor.reset_trailing_point();
+        }
+    }
 
-  void shift_cursor_down() {
-    m_text_buffer.move_cursor_down(m_cursor.active_point());
-  }
+    void move_cursor_right() {
+        if (m_cursor.in_selection_mode()) {
+            CursorPoint right_point = m_cursor.get_right_point();
+            m_cursor.reset_to_point(right_point);
+        } else {
+            m_text_buffer.move_cursor_right(m_cursor.active_point());
+            m_cursor.reset_trailing_point();
+        }
+    }
 
-  void shift_cursor_left() {
-    m_text_buffer.move_cursor_left(m_cursor.active_point());
-    std::cerr << "shifting cursor left." << std::endl;
-    std::cerr << "shifting cursor active col:" << m_cursor.active_point().col() << std::endl;
-    std::cerr << "shifting cursor trailing col:" << m_cursor.trailing_point().col() << std::endl;
-  }
+    // Shift cursor movement
 
-  void shift_cursor_right() {
-    m_text_buffer.move_cursor_right(m_cursor.active_point());
-    std::cerr << "shifting cursor right." << std::endl;
-    std::cerr << "shifting cursor active col:" << m_cursor.active_point().col() << std::endl;
-    std::cerr << "shifting cursor trailing col:" << m_cursor.trailing_point().col() << std::endl;
-  }
+    void shift_cursor_up() {
+        m_text_buffer.move_cursor_up(m_cursor.active_point());
+    }
 
-  // const view api
-  Text get_text() const {
-    return m_text_buffer.get_text();
-  }
+    void shift_cursor_down() {
+        m_text_buffer.move_cursor_down(m_cursor.active_point());
+    }
 
-  Cursor get_cursor() const {
-    return m_cursor;
-  }
+    void shift_cursor_left() {
+        m_text_buffer.move_cursor_left(m_cursor.active_point());
+        std::cerr << "shifting cursor left." << std::endl;
+        std::cerr << "shifting cursor active col:" << m_cursor.active_point().col() << std::endl;
+        std::cerr << "shifting cursor trailing col:" << m_cursor.trailing_point().col() << std::endl;
+    }
+
+    void shift_cursor_right() {
+        m_text_buffer.move_cursor_right(m_cursor.active_point());
+        std::cerr << "shifting cursor right." << std::endl;
+        std::cerr << "shifting cursor active col:" << m_cursor.active_point().col() << std::endl;
+        std::cerr << "shifting cursor trailing col:" << m_cursor.trailing_point().col() << std::endl;
+    }
+
+    // const view api
+    Text get_text() const {
+        return m_text_buffer.get_text();
+    }
+
+    Cursor get_cursor() const {
+        return m_cursor;
+    }
 };
