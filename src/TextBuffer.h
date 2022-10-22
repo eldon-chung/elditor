@@ -240,15 +240,14 @@ class TextBuffer {
 
     // Returns the entire contents of the text buffer as a single string
     std::string get_as_string() const {
+        assert(!m_text_buffer.empty());
         std::string view_string{""};
         for (std::string const &line : m_text_buffer) {
             view_string += line;
             view_string += "\n";
         }
         // remove the last newl
-        if (view_string.size() >= 1) {
-            view_string.pop_back();
-        }
+        view_string.pop_back();
         return view_string;
     }
 
