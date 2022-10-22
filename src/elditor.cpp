@@ -4,6 +4,7 @@
 #include "Model.h"
 #include "TextBuffer.h"
 #include "View.h"
+#include "file.h"
 #include "key_codes.h"
 
 extern "C" {
@@ -67,9 +68,15 @@ void handle_key(Model &model, Key key) {
     }
 }
 
-int main() {
+int main(int argc, char **argv) {
+
     // construct model and give view a "handle" to model
     Model model = Model::initialize();
+    if (argc > 1) {
+        // if there is a filename (and ignore the subsequent arguments)
+        model.open_file(std::string(argv[1]));
+    }
+
     ViewModel view_model = ViewModel(&model);
     View view = View::initialize(&view_model);
 
@@ -96,6 +103,10 @@ int main() {
         Key key = opt_key.value();
         if (key.is_type(KeyType::ALPHA) && key.is_modified_by(KeyModifier::CTRL) && key.get_char() == 'Q') {
             break;
+        }
+
+        if (key.is_type(KeyType::ALPHA) && key.is_modified_by(KeyModifier::CTRL) && key.get_char() == 'S') {
+            model.save_to_file();
         }
 
         // handling the key normally

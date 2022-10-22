@@ -41,3 +41,5 @@ src/debug_log
 src/compile_commands.json
 src/.cache/*
 src/test
+test
+misc/scanner

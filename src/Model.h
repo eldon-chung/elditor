@@ -1,13 +1,19 @@
 #pragma once
 #include "Text.h"
 #include "TextBuffer.h"
+#include "file.h"
 
 // Conceptually stores the state of the program
 class Model {
-    TextBuffer m_text_buffer;
     Cursor m_cursor;
+    FileHandle m_file_handle;
+    TextBuffer m_text_buffer;
 
     Model() : m_cursor{0, 0, 0} {
+    }
+
+    Model(std::string pathname)
+        : m_cursor{0, 0, 0}, m_file_handle(std::move(pathname)), m_text_buffer(m_file_handle.read()) {
     }
 
   public:
@@ -20,6 +26,36 @@ class Model {
 
     static Model initialize() {
         return Model();
+    }
+
+    // do we even need this
+    static Model initialise(std::string pathname) {
+        return Model(std::move(pathname));
+    }
+
+    void open_file(std::string pathname) {
+        // if our file handle has a file right now
+        if (m_file_handle.is_handle_to_file()) {
+            // write out the contents
+            m_file_handle.save(m_text_buffer.get_as_string());
+        }
+
+        // open the new file
+        m_file_handle.open(std::move(pathname));
+        m_text_buffer = TextBuffer(m_file_handle.read());
+    }
+
+    void save_to_file() {
+        // if our file handle has a file right now
+        if (m_file_handle.is_handle_to_file()) {
+            // write out the contents
+            // std::cerr << "Model: Save was called!" << std::endl;
+            m_file_handle.save(m_text_buffer.get_as_string());
+        } else {
+            // we should prompt the user for a name instead of simply returning
+            std::cerr << "Model: No file open to save to right now." << std::endl;
+            return;
+        }
     }
 
     void insert_string(std::string &&to_insert) {

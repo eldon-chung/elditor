@@ -52,6 +52,7 @@
 // Special key combinations; only have to list the non alphabetical ones
 #define CONTROL_SLASH 31
 #define CONTROL_Q 17
+#define CONTROL_S 19
 
 enum KeyType {
     ALPHA,
@@ -198,6 +199,7 @@ const std::unordered_map<int, const Key> reserved_keycode_to_key{
     // MISC Key combinations
     {CONTROL_SLASH, {'/', KeyType::PUNCTUATION, KeyModifier::CTRL}},
     {CONTROL_Q, {'Q', KeyType::ALPHA, KeyModifier::CTRL}},
+    {CONTROL_S, {'S', KeyType::ALPHA, KeyModifier::CTRL}},
 };
 
 std::optional<Key> keycode_to_key(int keycode);

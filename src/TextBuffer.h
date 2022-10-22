@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "Cursor.h"
@@ -15,6 +16,26 @@ class TextBuffer {
     std::vector<std::string> m_text_buffer;
 
   public:
+    TextBuffer(std::string file_contents) {
+        // Don't think you need to call the move here (because it's a return value) right?
+        m_text_buffer = break_into_lines(file_contents);
+    }
+
+    friend void swap(TextBuffer &a, TextBuffer &b) {
+        std::swap(a.m_text_buffer, b.m_text_buffer);
+    }
+
+    TextBuffer(TextBuffer &&other) {
+        m_text_buffer = std::move(other.m_text_buffer);
+    }
+
+    TextBuffer &operator=(TextBuffer &&other) {
+        TextBuffer temp{std::move(other)};
+        using std::swap;
+        swap(*this, temp);
+        return *this;
+    }
+
     TextBuffer() {
         // Ensure the buffer has at least an empty line
         m_text_buffer.emplace_back(std::string(""));
@@ -323,7 +344,7 @@ class TextBuffer {
         assert(!str.empty());
         std::string_view str_view{str};
         std::vector<std::string> lines;
-        do {
+        while (!str_view.empty()) {
             size_t newl_idx = str_view.find_first_of("\n");
             if (newl_idx == std::string::npos) {
                 lines.push_back(std::string{str_view});
@@ -336,7 +357,7 @@ class TextBuffer {
                 // so we need to append one more string
                 lines.push_back("");
             }
-        } while (!str_view.empty());
+        }
         return lines;
     }
 
