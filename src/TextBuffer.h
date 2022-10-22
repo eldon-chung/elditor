@@ -245,6 +245,10 @@ class TextBuffer {
             view_string += line;
             view_string += "\n";
         }
+        // remove the last newl
+        if (view_string.size() >= 1) {
+            view_string.pop_back();
+        }
         return view_string;
     }
 
